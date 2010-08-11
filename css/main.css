@@ -10,13 +10,13 @@ body {
 	top:40%;
 	padding:1px;
 	z-index:20001;
-	border: 1px solid #999999;
+	border: 1px solid #E37A09;
 	width: 250px;
 }
 
 #loading .loading-indicator{
-	background: #EFEFFF;
-	color: #444444;
+	background: #C5AD93;
+	color: #222222;
 	font-weight: bold;
 	font-size:  13px;
 	line-height: 22px;
