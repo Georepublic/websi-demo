@@ -14,8 +14,8 @@
 
 <body>
 	<div id="loading">
-	    <div class="loading-indicator">
-	    	<img src="img/loading-icon.gif"/>
+		<div class="loading-indicator">
+			<img src="img/loading-icon.gif"/>
 			<span id="loading-title">
 				<script type="text/javascript">
 					document.write("OpenVRP Engine - Demo");
@@ -27,8 +27,8 @@
 				</script>
 			</span>
 		</div>
-	</div>		
-	
+	</div>
+
 	<script type="text/javascript">document.getElementById('loading-msg').innerHTML = "Loading OpenLayers ..."</script>
 	<script src="http://maps.google.com/maps?file=api&amp;v=2&amp;sensor=true&amp;key=ABQIAAAAXRQTsj9_bEUYstPWwJ4iOBRDCOZJPnKRX0oU_LmqFt7NOTjq6hS2mPCvcmLNCe4ZigJKszqAOVqRpA" type="text/javascript"></script>
 	<script type="text/javascript" src="lib/proj4js/lib/proj4js-combined.js"></script>
@@ -48,13 +48,13 @@
 	OpenLayers.IMAGE_RELOAD_ATTEMPTS = 5;
 	OpenLayers.Util.onImageLoadErrorColor = 'transparent';
 	Ext.BLANK_IMAGE_URL = 'lib/ext/resources/images/default/s.gif';
-	
+
 	Ext.onReady(function() {
 		/**
 		 * Disable state management during development
 		 */
 		//Ext.state.Manager.setProvider(new Ext.state.CookieProvider());
-		
+
 		/**
 		 * Data Projection, etc.
 		 */
@@ -73,9 +73,9 @@
 		 */
 		var capabilities = new Ext.data.JsonStore({
 			root: 'capabilities',
-	        proxy: new Ext.data.HttpProxy({
-	            url: OpenLayers.ProxyHost 
-	        }),
+			proxy: new Ext.data.HttpProxy({
+				url: OpenLayers.ProxyHost 
+			}),
 			idProperty: 'name',
 			fields: ['name','title','description',
 						'parameters','services'],
@@ -143,30 +143,30 @@
 		/**
 		 * Profile gets stored here
 		 */
-        var profilePopup = new Ext.Window({
-	        title: 'Profile - Capabilities',
+		var profilePopup = new Ext.Window({
+			title: 'Profile - Capabilities',
 			border: false,
-            width:500,
-            height:300,
+			width:500,
+			height:300,
 			modal: true,
 			layout: 'fit',
 			resizable: false,
-	        closeAction: 'hide',
-	        items: [
+			closeAction: 'hide',
+			items: [
 				new Ext.TabPanel({
 				    activeTab: 0,
 					resizeTabs: true,
 					border: false,
-				    items: [
+					items: [
 						/*new Ext.FormPanel({
-					        title: 'Summary',
-					        html: '... add profile informations here ...'
+							title: 'Summary',
+							html: '... add profile informations here ...'
 						}),*/
 						new Ext.FormPanel({
-					        title: 'Response',
+							title: 'Response',
 							layout: 'fit',
 							border: false,
-				        	items: [{
+							items: [{
 								xtype: 'textarea',
 								id: 'capabilities-json',
 								monitorResize: true
@@ -240,8 +240,8 @@
 								id: 'waypoint-response',
 								monitorResize: true
 							}]
-						})	
-				    ]
+						})
+					]
 				})
 			],
 			plain: true,
@@ -339,21 +339,21 @@
 		var ghyb = new OpenLayers.Layer.Google(" Google Hybrid",
 			{type: G_HYBRID_MAP, sphericalMercator: true, numZoomLevels: 19}
 		);
-		
+
 		/**
 		 * OSM Layers
 		 */
 		var cycleattrib = '<b>OpenCycleMap.org - the <a href="http://www.openstreetmap.org">OpenStreetMap</a> Cycle Map</b>';
 
 		var cycle = new OpenLayers.Layer.TMS(" OSM Cycle Map", 
-                        ["http://a.andy.sandbox.cloudmade.com/tiles/cycle/",
-                         "http://b.andy.sandbox.cloudmade.com/tiles/cycle/",
-                         "http://c.andy.sandbox.cloudmade.com/tiles/cycle/"],
-                        { type: 'png', getURL: getTileURL, displayOutsideMaxExtent: true,
-                          attribution: cycleattrib, transitionEffect: 'resize'});
-		
+					["http://a.andy.sandbox.cloudmade.com/tiles/cycle/",
+					 "http://b.andy.sandbox.cloudmade.com/tiles/cycle/",
+					 "http://c.andy.sandbox.cloudmade.com/tiles/cycle/"],
+					{ type: 'png', getURL: getTileURL, displayOutsideMaxExtent: true,
+					  attribution: cycleattrib, transitionEffect: 'resize'});
+
 		var osm = new OpenLayers.Layer.OSM(" OSM Mapnik");
-		
+
 		/**
 		 * Vector Layers
 		 */
@@ -369,7 +369,7 @@
 				}
 			})
 		});
-		
+
 		var routes = new OpenLayers.Layer.Vector(" Route Layer",{
 			styleMap: new OpenLayers.StyleMap({
 				'default': OpenLayers.Util.applyDefaults({
@@ -381,7 +381,7 @@
 				}
 			})
 		});
-		
+
 		var polygon = new OpenLayers.Layer.Vector(" Catch Layer",{
 			styleMap: new OpenLayers.StyleMap({
 				'default': OpenLayers.Util.applyDefaults({
@@ -394,7 +394,7 @@
 				}
 			})
 		});
-		
+
 		var routeStore = new GeoExt.data.FeatureStore({
 			layer: routes,
 			root: 'features',
@@ -404,12 +404,12 @@
 				{ name: 'service', mapping: 'service' },
 				{ name: 'length', type: 'float', mapping: 'length' }
 			],
-	        proxy: new GeoExt.data.ProtocolProxy({
-	            protocol: new OpenLayers.Protocol.HTTP({
-	                url: OpenLayers.ProxyHost,
-	                format: new OpenLayers.Format.GeoJSON()
-	            })
-	        }),
+			proxy: new GeoExt.data.ProtocolProxy({
+				protocol: new OpenLayers.Protocol.HTTP({
+					url: OpenLayers.ProxyHost,
+					format: new OpenLayers.Format.GeoJSON()
+				})
+			}),
 			listeners: {
 				load: function(store, records, options){
 					Ext.each(records, function(item){
@@ -418,11 +418,11 @@
 						item.set('service', options.params.service);
 						item.commit();
 					});
-					
+
 					if(pointStore){
 						// Filter current route segments (for path length)
 						var filter = store.filter('to', options.params.to);
-											
+
 						var points = pointStore.query('id', options.params.to);	
 						points.each(function(item){ 
 							if(records.length > 0){
@@ -433,13 +433,11 @@
 							else {
 								item.set('message', 'No service result'); 
 							}
-							
 							// Save AJAX response in store
 							item.set('response', store.proxy.response.priv.responseText);
 							item.set('request', store.proxy.protocol.options.url);
 							item.commit();
 						});
-						
 						// Reset store filter
 						store.clearFilter(true);
 					}
@@ -454,12 +452,12 @@
 				{ name: 'from', mapping: 'state' },
 				{ name: 'service', mapping: 'service' }
 			],
-	        proxy: new GeoExt.data.ProtocolProxy({
-	            protocol: new OpenLayers.Protocol.HTTP({
-	                url: OpenLayers.ProxyHost,
-	                format: new OpenLayers.Format.GeoJSON()
-	            })
-	        }),
+			proxy: new GeoExt.data.ProtocolProxy({
+				protocol: new OpenLayers.Protocol.HTTP({
+					url: OpenLayers.ProxyHost,
+					format: new OpenLayers.Format.GeoJSON()
+				})
+			}),
 			listeners: {
 				load: function(store, records, options){
 					Ext.each(records, function(item){
@@ -467,7 +465,7 @@
 						item.set('service', options.params.service);
 						item.commit();
 					});
-					
+
 					if(pointStore){
 						var points = pointStore.query('id', options.params.center);
 						points.each(function(item){ 
@@ -489,9 +487,9 @@
 				}
 			}
 		});
-		
+
 		var pointStore = new GeoExt.data.FeatureStore({
-	        layer: points,
+			layer: points,
 			root: '',
 			fields: [
 				{ name: 'service', defaultValue: '---' },
@@ -499,7 +497,7 @@
 			],
 			listeners: {
 				add: function(store,records,idx){
-													
+
 					records[0].data['message'] = 'Searching ...';
 					records[0].data['service'] = service;
 					records[0].data['total'] = 0;
@@ -515,7 +513,7 @@
 								var start = store.getAt(idx-1);	
 								p1 = start.data.feature.geometry;
 								p2 = records[0].data.feature.geometry;
-								
+
 								var json = { 
 									points: [
 										p1.x + ' ' + p1.y, 
@@ -523,7 +521,7 @@
 									], 
 									crs: worldmap.projection
 								};
-								
+
 								routeStore.proxy.protocol.options.url = 
 											url + '&json=' + Ext.encode(json);
 								routeStore.load({ 
@@ -539,20 +537,20 @@
 								records[0].data['message'] = 'Starting point';
 							}
 							break;
-							
+
 						case 'catch':
 							var url = OpenLayers.ProxyHost + '/' 
 										+ capabilities.data.items[0].data.name
 										+ '/catch.geojson';
 
 							p1 = records[0].data.feature.geometry;
-							
+
 							var json = { 
 								points: [ p1.x + ' ' + p1.y ], 
 								distance: Ext.getCmp('menu-catch-limits').getValue(),
 								crs: worldmap.projection
 							};
-							
+
 							catchStore.proxy.protocol.options.url = 
 										url + '&json=' + Ext.encode(json);
 							catchStore.load({ 
@@ -566,35 +564,32 @@
 							
 						case 'geocode':
 							break;
-					}	
+					}
 				},
 				remove: function(store,record,idx){
 					var from = routeStore.query('from',record.data.id);
 					var to = routeStore.query('to',record.data.id);
-
-					from.each(function(item){ routeStore.remove(item); });
-					to.each(function(item){ routeStore.remove(item); });
-
+					from.each(function(item){
+						routeStore.remove(item); 
+					});
+					to.each(function(item){ 
+						routeStore.remove(item); 
+					});
 					var center = catchStore.query('center',record.data.id);
 					center.each(function(item){ catchStore.remove(item); });
-					
 					// is there a new end point?
 					if(store.getAt(idx)){
 						var url = OpenLayers.ProxyHost + '/' 
 									+ capabilities.data.items[0].data.name
 									+ '/route.geojson';
-
 						var end = store.getAt(idx);
-						
 						// is the service 'route'?
 						if(end.data.service == 'route'){
-							
 							// is there a new start point?
 							if(store.getAt(idx-1)){
 								var start = store.getAt(idx-1);
 								p1 = start.data.feature.geometry;
 								p2 = end.data.feature.geometry;
-								
 								var json = { 
 									points: [
 										p1.x + ' ' + p1.y, 
@@ -602,7 +597,6 @@
 									], 
 									crs: worldmap.projection
 								};
-								
 								routeStore.proxy.protocol.options.url = 
 											url + '&json=' + Ext.encode(json);
 								routeStore.load({ 
@@ -620,8 +614,8 @@
 					}
 				}
 			}
-	    });
-		
+		});
+
 		var pointGrid = new Ext.grid.GridPanel({
 			region: 'center',
 			layout: 'fit',
@@ -649,12 +643,10 @@
 						from.each(function(item){ 
 							//highlight features
 						});
-
 						var to = routeStore.query('to',rec.data.id);
 						to.each(function(item){ 
 							//highlight features 
 						});
-	
 						var center = catchStore.query('center',rec.data.id);
 						center.each(function(item){ 
 							//highlight features  
@@ -665,12 +657,10 @@
 						from.each(function(item){ 
 							//turn off highlight features 
 						});
-
 						var to = routeStore.query('to',rec.data.id);
 						to.each(function(item){ 
 							//turn off highlight features 
 						});
-	
 						var center = catchStore.query('center',rec.data.id);
 						center.each(function(item){ 
 							//turn off highlight features  
@@ -685,7 +675,6 @@
 						var record = store.getAt(rowIndex);  // Get the Record
 						var field = grid.getColumnModel().getDataIndex(colIndex); // Get field name
 						var data = record.get(field);
-						
 						//delete column
 						if(colIndex == 3) {
 							store.remove(record);
@@ -696,24 +685,20 @@
 				rowdblclick: function(grid,rowIndex,evt){
 					var store = grid.getStore();
 					var record = store.getAt(rowIndex);  
-					
 					if(record.data.request){
 						var url = record.data.request.split('url=');
 						Ext.getCmp('waypoint-url').setValue(url[1].replace(/&json/,'?json'));
-						
 						var request = record.data.request.split('json=');
 						var requestJson = Ext.decode(request[1]);
 						Ext.getCmp('waypoint-request').setValue(prettyJson(requestJson));
-						
 						var responseJson = Ext.decode(record.data.response);
 						Ext.getCmp('waypoint-response').setValue(prettyJson(responseJson));
-
 						pointPopup.show();
 					}
 				}
 			}
 		});
-		
+
 		var catchGrid = new Ext.grid.GridPanel({
 			store: catchStore,
 			cm: new Ext.grid.ColumnModel([
@@ -721,7 +706,7 @@
 			]),
 			sm: new GeoExt.grid.FeatureSelectionModel()
 		});
-		
+
 		/**
 		 * WRS Profile Store
 		 */
@@ -737,28 +722,28 @@
 				{ name: 'description', mapping: 'description' }
 			])
 		});
-		
+
 		var profileMenu = {  
-            xtype: 'buttongroup',
-            title: 'Profile',
+			xtype: 'buttongroup',
+			title: 'Profile',
 			columns: 2,
-            defaults: {
-                scale: 'large',
-                iconAlign: 'left'
-            },
+			defaults: {
+				scale: 'large',
+				iconAlign: 'left'
+			},
 			items: [{
 				xtype: 'combo',
-		        mode: 'local',
+				mode: 'local',
 				id: 'combo-select-profile',
 				store: profileStore,
-		        emptyText: 'Select Profile...',
-		        displayField: 'title',
+				emptyText: 'Select Profile...',
+				displayField: 'title',
 				hiddenName: 'name', 
-		        valueField: 'name',
+				valueField: 'name',
 				editable: false,
-		        forceSelection: true,
-		        triggerAction: 'all',
-		        selectOnFocus: true,
+				forceSelection: true,
+				triggerAction: 'all',
+				selectOnFocus: true,
 				listeners: {
 					select: function(combo, record, idx){
 						// Get profile capabilties
@@ -777,7 +762,6 @@
 					if(capabilities){
 						var url = capabilities.proxy.url.split('url=');
 						Ext.getCmp('capabilities-url').setValue(url[1]);
-
 						var json = prettyJson(capabilities.reader.jsonData);
 						Ext.getCmp('capabilities-json').setValue(json);
 						profilePopup.show();
@@ -785,18 +769,18 @@
 				}
 			}]
 		};
-		
+
 		var serviceMenu = {
-            xtype: 'buttongroup',
+			xtype: 'buttongroup',
 			id: 'button-services',
-            title: 'Services',
+			title: 'Services',
 			columns: 3,
-            defaults: {
-                scale: 'large',
-                iconAlign: 'left',
+			defaults: {
+				scale: 'large',
+				iconAlign: 'left',
 				disabled: true, 
 				toggleGroup: 'toggle-services',
-	        	allowDepress: false,
+				allowDepress: false,
 				listeners: {
 					toggle: function(btn,state){
 						if(state){
@@ -813,7 +797,7 @@
 						}
 					}
 				}
-            },
+			},
 			items: [{
 				text: 'Shortest Path',
 				id: 'button-route',
@@ -834,15 +818,15 @@
 				iconCls: 'button-icon-geocode'
 			}]
 		};
-		
+
 		var defaultMenu = {
-            xtype: 'buttongroup',
+			xtype: 'buttongroup',
 			id: 'menu-default',
 			frame: false,
-            defaults: {
-                scale: 'small',
-                iconAlign: 'left'
-            },
+			defaults: {
+				scale: 'small',
+				iconAlign: 'left'
+			},
 			items: [{ xtype: 'tbseparator' },{
 				text: 'Reset all',
 				iconCls: 'button-icon-default-reset',
@@ -853,58 +837,58 @@
 				}
 			},{ xtype: 'tbseparator' }]
 		};
-		
+
 		var routeMenu = {
-            xtype: 'buttongroup',
+			xtype: 'buttongroup',
 			id: 'menu-route',
 			hidden: true,
 			frame: false,
-            defaults: {
-                scale: 'small',
-                iconAlign: 'left'
-            },
+			defaults: {
+				scale: 'small',
+				iconAlign: 'left'
+			},
 			items: [{ xtype: 'tbseparator' }, 
 				new GeoExt.Action({
-			        text: "Set Point",
+					text: "Set Point",
 					iconCls: 'button-icon-start-add',
-			        map: worldmap,
-			        toggleGroup: "menu-route",
-			        group: "menu-route",
-			        control: new OpenLayers.Control.DrawFeature(
-			            points, OpenLayers.Handler.Point
-			        )
-			    }),
+					map: worldmap,
+					toggleGroup: "menu-route",
+					group: "menu-route",
+					control: new OpenLayers.Control.DrawFeature(
+						points, OpenLayers.Handler.Point
+					)
+				}),
 				{ xtype: 'tbseparator' }
 			]
 		};
-		
+
 		var catchMenu = {
-            xtype: 'buttongroup',
+			xtype: 'buttongroup',
 			id: 'menu-catch',
 			hidden: true,
 			frame: false,
-            defaults: {
-                scale: 'small',
-                iconAlign: 'left'
-            },
+			defaults: {
+				scale: 'small',
+				iconAlign: 'left'
+			},
 			items: [{ xtype: 'tbseparator' }, 
 				new GeoExt.Action({
-			        text: "Set Point",
+					text: "Set Point",
 					iconCls: 'button-icon-start-add',
-			        map: worldmap,
-			        toggleGroup: "menu-catch",
-			        group: "menu-catch",
-			        control: new OpenLayers.Control.DrawFeature(
-			            points, OpenLayers.Handler.Point
-			        )
-			    }),
+					map: worldmap,
+					toggleGroup: "menu-catch",
+					group: "menu-catch",
+					control: new OpenLayers.Control.DrawFeature(
+						points, OpenLayers.Handler.Point
+					)
+				}),
 				{ xtype: 'tbseparator' },{
 					xtype: 'tbtext',
 					text: 'Within: '
 				},{
 					xtype: 'textfield',
 					id: 'menu-catch-limits',
-			        emptyText: 'Type limit...',
+					emptyText: 'Type limit...',
 					regex: /[^%_*?!&;:,]/,
 					enableKeyEvents: true,
 					allowBlank: false,
@@ -922,14 +906,14 @@
 		};
 		
 		var geocodeMenu = {
-            xtype: 'buttongroup',
+			xtype: 'buttongroup',
 			id: 'menu-geocode',
 			hidden: true,
 			frame: false,
-            defaults: {
-                scale: 'small',
-                iconAlign: 'left'
-            },
+			defaults: {
+				scale: 'small',
+				iconAlign: 'left'
+			},
 			items: [{
 				text: 'Set Point',
 				id: 'menu-geocode-set',
@@ -946,7 +930,7 @@
 			},{
 				xtype: 'textfield',
 				id: 'menu-geocode-search',
-		        emptyText: 'Type address...',
+				emptyText: 'Type address...',
 				regex: /[^%_*?!&;:,]/,
 				enableKeyEvents: true,
 				listeners: {
@@ -961,7 +945,7 @@
 				iconCls: 'button-icon-geocode-locate',
 				handler: function(){
 					//console.info('geocode');
-				}					
+				}
 			}]
 		};
 		
@@ -984,8 +968,7 @@
 				},{
 				region: 'center',
 				layout: 'border',
-				border: false,
-				tbar: [ profileMenu, serviceMenu ],
+				border: true,
 				items: [{
 					region: 'center',
 					xtype: 'gx_mappanel',
@@ -1010,27 +993,19 @@
 						]
 					})
 				},{
-					region: 'east',
-					xtype: 'tabpanel',
-					header: false,
-					activeTab: 0, 
-					border: false,
+					region: 'west',
+					xtype: 'panel',
+					title: 'Control Panel',
+					border: true,
 					split: true,
 					collapsible: true,
 					collapseMode: 'mini',
 					hideCollapseTool: true,
 					resizeTabs: true,
-					width: 300,
-					minSize: 250,
-					items: [{ 
-							title: 'Details', 
-							xtype: 'panel', 
-							region: 'center',
-							layout: 'border',
-							border: false,
-							items: [ pointGrid ] 
-						}
-					],
+					width: 550,
+					minSize: 550,
+					items: [ pointGrid ],
+					tbar: [ profileMenu, serviceMenu ],
 					bbar: new Ext.Toolbar({
 						items: [
 							'->', { xtype: 'tbtext', text: 'Georepubluc UG & Georepublic Japan &copy;2010' }
@@ -1046,9 +1021,7 @@
 	 * @param {Object} json
 	 */
 	function prettyJson(json){
-		
 		var encoded = Ext.util.JSON.encode(json);
-				
 		var formatted = js_beautify(
 			encoded.replace(/^\s+/, ''), {
 				indent_size: 1, 
@@ -1066,16 +1039,13 @@
 		var y = Math.round((this.maxExtent.top - bounds.top) / (res * this.tileSize.h));
 		var z = this.map.getZoom();
 		var limit = Math.pow(2, z);
-		
 		if (y < 0 || y >= limit){
 			return null;
 		}
 		else {
 			x = ((x % limit) + limit) % limit;
-			
 			var url = this.url;
 			var path = z + "/" + x + "/" + y + ".png";
-			
 			if (url instanceof Array) {
 				url = this.selectUrl(path, url);
 			}
