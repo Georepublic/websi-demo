@@ -1,0 +1,1088 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<title>OpenVRP Routing - powered by WebSI Cola</title>
+
+	<link rel="shortcut icon" href="img/favicon.ico" />
+	<link rel="stylesheet" type="text/css" href="lib/ext-3.2.1/resources/css/ext-all.css"></link>
+	<link rel="stylesheet" type="text/css" href="lib/ext-3.2.1/resources/css/xtheme-gray.css"></link>
+	<link rel="stylesheet" type="text/css" href="lib/geoext-0.7/resources/css/geoext-all.css"></link>
+	<link href='http://fonts.googleapis.com/css?family=Yanone+Kaffeesatz:regular,bold' rel='stylesheet' type='text/css'>
+	<link rel="stylesheet" type="text/css" href="css/main.css" />
+</head>
+
+<body>
+	<div id="loading">
+	    <div class="loading-indicator">
+	    	<img src="img/loading-icon.gif"/>
+			<span id="loading-title">
+				<script type="text/javascript">
+					document.write("OpenVRP Engine - Demo");
+				</script>
+			</span><br/>
+			<span id="loading-msg">
+				<script type="text/javascript">
+					document.write("Loading CSS ...");
+				</script>
+			</span>
+		</div>
+	</div>		
+	
+	<script type="text/javascript">document.getElementById('loading-msg').innerHTML = "Loading OpenLayers ..."</script>
+	<script type="text/javascript" src="http://maps.google.com/maps?file=api&amp;v=2&amp;sensor=false&amp;key="></script>
+	<script type="text/javascript" src="lib/proj4js/lib/proj4js-combined.js"></script>
+	<script type="text/javascript" src="lib/openlayers-2.9.1/OpenLayers.js"></script>
+
+	<script type="text/javascript">document.getElementById('loading-msg').innerHTML = "Loading ExtJS ..."</script>
+	<script type="text/javascript" src="lib/ext-3.2.1/adapter/ext/ext-base.js"></script>
+	<script type="text/javascript" src="lib/ext-3.2.1/ext-all.js"></script>
+	
+	<script type="text/javascript">document.getElementById('loading-msg').innerHTML = "Loading GeoExt ..."</script>
+	<script type="text/javascript" src="lib/geoext-0.7/script/GeoExt.js"></script>  
+	
+	<script type="text/javascript">document.getElementById('loading-msg').innerHTML = "Initialize ..."</script>
+	<script type="text/javascript" src="lib/beautify/beautify.js" ></script>
+	<script type="text/javascript">
+
+	OpenLayers.IMAGE_RELOAD_ATTEMPTS = 5;
+	OpenLayers.Util.onImageLoadErrorColor = 'transparent';
+	Ext.BLANK_IMAGE_URL = 'lib/ext/resources/images/default/s.gif';
+	
+	Ext.onReady(function() {
+		/**
+		 * Disable state management during development
+		 */
+		//Ext.state.Manager.setProvider(new Ext.state.CookieProvider());
+		
+		/**
+		 * Data Projection, etc.
+		 */
+		var projection    = new OpenLayers.Projection("EPSG:4326");
+		var defaultCenter = new OpenLayers.LonLat(136.5,36.0);
+		
+		/**
+		 * Global parameters
+		 */
+		var service = false;
+		var popup = false;
+		var popupOptions = "width=800,height=600,status=yes,scrollbars=yes,resizable=yes";
+		
+		/**
+		 * Capabilities store
+		 */
+		var capabilities = new Ext.data.JsonStore({
+			root: 'capabilities',
+	        proxy: new Ext.data.HttpProxy({
+	            url: OpenLayers.ProxyHost 
+	        }),
+			idProperty: 'name',
+			fields: ['name','title','description',
+						'parameters','services'],
+			listeners: {
+				load: function(store, records, options){
+					
+					var rdata = records[0].data;
+					
+					var info = Ext.getCmp('button-profile-info');
+					(records.length > 0) ? info.enable() : info.disable();
+					
+					Ext.getCmp('button-services').items.each(function(btn){
+						btn.disable().toggle(false);
+					});
+					
+					if(rdata.services['locate']){
+						Ext.getCmp('button-geocode').enable();
+					}
+					
+					if(rdata.services['catch']){
+						Ext.getCmp('button-catch').enable();
+					}
+
+					if(rdata.services['route']){
+						Ext.getCmp('button-route').enable();
+					}
+					
+					// Pan to default extent
+					var e = rdata.parameters.extent.value.split(',');
+					
+					var extent = [];
+					extent.push(parseFloat(e[0].split(' ')[0]));
+					extent.push(parseFloat(e[0].split(' ')[1]));
+					extent.push(parseFloat(e[1].split(' ')[1]));
+					extent.push(parseFloat(e[1].split(' ')[2]));
+					
+					var bounds = OpenLayers.Bounds.fromArray(extent);
+					bounds.transform(
+						new OpenLayers.Projection(rdata.parameters.srid_in.value), 
+						worldmap.getProjectionObject()
+					);
+					
+					if(!bounds.containsBounds(worldmap.getExtent())){
+						worldmap.zoomToExtent(bounds);
+						
+						// Empty stores
+						pointStore.removeAll();
+						routeStore.removeAll();
+						catchStore.removeAll();
+					}
+					
+					if(rdata.parameters.units){
+						Ext.getCmp('menu-catch-limits').setValue(1.00);
+						Ext.getCmp('menu-catch-units').setText(' [' 
+									+ rdata.parameters.units.value + ']');
+					}
+					else{
+						Ext.getCmp('menu-catch-limits').setValue(5000);
+						Ext.getCmp('menu-catch-units').setText(' [m]');
+					}
+				}
+			}
+		});
+		
+		/**
+		 * Profile gets stored here
+		 */
+        var profilePopup = new Ext.Window({
+	        title: 'Profile - Capabilities',
+			border: false,
+            width:500,
+            height:300,
+			modal: true,
+			layout: 'fit',
+			resizable: false,
+	        closeAction: 'hide',
+	        items: [
+				new Ext.TabPanel({
+				    activeTab: 0,
+					resizeTabs: true,
+					border: false,
+				    items: [
+						/*new Ext.FormPanel({
+					        title: 'Summary',
+					        html: '... add profile informations here ...'
+						}),*/
+						new Ext.FormPanel({
+					        title: 'Response',
+							layout: 'fit',
+							border: false,
+				        	items: [{
+								xtype: 'textarea',
+								id: 'capabilities-json',
+								monitorResize: true
+							}]
+						})	
+					]
+				})
+			],
+			plain: true
+			buttons: [{
+				text: 'Close',
+				handler: function(){
+					profilePopup.hide();
+				}
+			}],
+			bbar: new Ext.Toolbar({
+				items: [{
+					xtype: 'tbtext',
+					text: 'URI: '
+				}, '->', {
+					xtype: 'textfield',
+					id: 'capabilities-url',
+					width: 450
+				}]
+			})
+		});
+
+		/**
+		 * Point gets stored here
+		 */
+		var pointPopup = new Ext.Window({
+			title: 'Waypoint - Info',
+			border: false,
+			width:500,
+			height:300,
+			modal: true,
+			layout: 'fit',
+			resizable: false,
+			closeAction: 'hide',
+			items: [
+				new Ext.TabPanel({
+					activeTab: 0,
+					resizeTabs: true,
+					border: false,
+					items: [
+						new Ext.FormPanel({
+							title: 'Request',
+							layout: 'fit',
+							border: false,
+							items: [{
+								xtype: 'textarea',
+								id: 'waypoint-request',
+								monitorResize: true,
+								listeners: {
+									change: function (field,newValue,oldValue){
+										var json = Ext.decode(newValue);
+										var url = Ext.getCmp('waypoint-url').getValue();
+										url = url.split('?json=');
+										url = url[0] + '?json=' + Ext.encode(json);
+										Ext.getCmp('waypoint-url').setValue(url);
+									}
+								}
+							}]
+						}),
+						new Ext.FormPanel({
+							title: 'Response',
+							layout: 'fit',
+							border: false,
+							items: [{
+								xtype: 'textarea',
+								id: 'waypoint-response',
+								monitorResize: true
+							}]
+						})	
+				    ]
+				})
+			],
+			plain: true,
+			buttons: [{
+				text: 'KML',
+				handler: function(){
+					var url = Ext.getCmp('waypoint-url').getValue();
+					url = url.replace(/geojson/,'kml');
+					popup = window.open(url, "KML", popupOptions);
+					popup.focus();
+				}
+			},{
+				text: 'GML',
+				handler: function(){
+					var url = Ext.getCmp('waypoint-url').getValue();
+					url = url.replace(/geojson/,'gml');
+					popup = window.open(url, "GML", popupOptions);
+					popup.focus();
+				}
+			},{
+				text: 'OpenLS',
+				handler: function(){
+					var url = Ext.getCmp('waypoint-url').getValue();
+					url = url.replace(/geojson/,'xls');
+					popup = window.open(url, "OpenLS", popupOptions);
+					popup.focus();
+				}
+			},{
+				text: 'GPX',
+				handler: function(){
+					var url = Ext.getCmp('waypoint-url').getValue();
+					url = url.replace(/geojson/,'gpx');
+					popup = window.open(url, "GPX", popupOptions);
+					popup.focus();
+				}
+			},{
+				text: 'Map',
+				handler: function(){
+					var url = Ext.getCmp('waypoint-url').getValue();
+					url = url.replace(/geojson/,'ol');
+					url = url.replace(/"EPSG:900913"/,'"EPSG:900913,EPSG:4326"');
+					popup = window.open(url, "OpenLayers", popupOptions);
+					popup.focus();
+				}
+			},{
+				text: 'Close',
+				handler: function(){
+					pointPopup.hide();
+					popup.close();
+				}
+			}],
+			bbar: new Ext.Toolbar({
+				items: [{
+					xtype: 'tbtext',
+					text: 'URI: '
+				}, '->', {
+					xtype: 'textfield',
+					id: 'waypoint-url',
+					width: 450
+				}]
+			})
+		});
+
+		/**
+		 * MapObject settings
+		 */
+		var worldmap = new OpenLayers.Map({
+			'projection': 'EPSG:900913',
+			'units':"m",
+			'maxResolution': 156543.0339,
+			'maxExtent': new OpenLayers.Bounds(-20037508.0,-20037508.0,20037508.0,20037508.0),
+			'transitionEffect': 'resize',
+			'controls': [
+				new OpenLayers.Control.PanZoomBar(),
+				new OpenLayers.Control.LayerSwitcher(),
+				new OpenLayers.Control.MousePosition({
+					separator: ' | ',
+					numDigits: 6,
+					displayProjection: projection
+				}),
+				new OpenLayers.Control.MouseDefaults()
+			],
+			panMethod: null
+		});
+
+		/**
+		 * Google Maps layers
+		 */
+		var gmap = new OpenLayers.Layer.Google(" Google Streets",
+			{sphericalMercator: true, numZoomLevels: 19}
+		);
+		var gsat = new OpenLayers.Layer.Google(" Google Satellite",
+			{type: G_SATELLITE_MAP, sphericalMercator: true, numZoomLevels: 19}
+		);
+		var ghyb = new OpenLayers.Layer.Google(" Google Hybrid",
+			{type: G_HYBRID_MAP, sphericalMercator: true, numZoomLevels: 19}
+		);
+		
+		/**
+		 * OSM Layers
+		 */
+		var cycleattrib = '<b>OpenCycleMap.org - the <a href="http://www.openstreetmap.org">OpenStreetMap</a> Cycle Map</b>';
+
+		var cycle = new OpenLayers.Layer.TMS(" OSM Cycle Map", 
+                        ["http://a.andy.sandbox.cloudmade.com/tiles/cycle/",
+                         "http://b.andy.sandbox.cloudmade.com/tiles/cycle/",
+                         "http://c.andy.sandbox.cloudmade.com/tiles/cycle/"],
+                        { type: 'png', getURL: getTileURL, displayOutsideMaxExtent: true,
+                          attribution: cycleattrib, transitionEffect: 'resize'});
+		
+		var osm = new OpenLayers.Layer.OSM(" OSM Mapnik");
+		
+		/**
+		 * Vector Layers
+		 */
+		var points = new OpenLayers.Layer.Vector(" Point Layer",{
+			styleMap: new OpenLayers.StyleMap({
+				'default': OpenLayers.Util.applyDefaults({
+						externalGraphic: './img/dd.png',
+						graphicOpacity: 1.0,
+						pointRadius: 16
+					}, OpenLayers.Feature.Vector.style["default"]), 
+				'select': {
+					pointRadius: 20
+				}
+			})
+		});
+		
+		var routes = new OpenLayers.Layer.Vector(" Route Layer",{
+			styleMap: new OpenLayers.StyleMap({
+				'default': OpenLayers.Util.applyDefaults({
+						strokeWidth: 4,
+						strokeColor: '#27ca43'
+					}, OpenLayers.Feature.Vector.style["default"]), 
+				'select': {
+					strokeColor: '#a52a2a'
+				}
+			})
+		});
+		
+		var polygon = new OpenLayers.Layer.Vector(" Catch Layer",{
+			styleMap: new OpenLayers.StyleMap({
+				'default': OpenLayers.Util.applyDefaults({
+						strokeWidth: 4,
+						strokeColor: '#4620ce',
+						fillColor: '#4620ce'
+					}, OpenLayers.Feature.Vector.style["default"]), 
+				'select': {
+					strokeWidth: 5
+				}
+			})
+		});
+		
+		var routeStore = new GeoExt.data.FeatureStore({
+			layer: routes,
+			root: 'features',
+			fields: [
+				{ name: 'from', mapping: 'state' },
+				{ name: 'to', mapping: 'state' },
+				{ name: 'service', mapping: 'service' },
+				{ name: 'length', type: 'float', mapping: 'length' }
+			],
+	        proxy: new GeoExt.data.ProtocolProxy({
+	            protocol: new OpenLayers.Protocol.HTTP({
+	                url: OpenLayers.ProxyHost,
+	                format: new OpenLayers.Format.GeoJSON()
+	            })
+	        }),
+			listeners: {
+				load: function(store, records, options){
+					Ext.each(records, function(item){
+						item.set('from', options.params.from);
+						item.set('to', options.params.to);
+						item.set('service', options.params.service);
+						item.commit();
+					});
+					
+					if(pointStore){
+						// Filter current route segments (for path length)
+						var filter = store.filter('to', options.params.to);
+											
+						var points = pointStore.query('id', options.params.to);	
+						points.each(function(item){ 
+							if(records.length > 0){
+								item.set('message', 'Route found [' 
+											+ records.length + ' segments]'); 
+								item.set('total', Math.round(store.sum('length'))); 
+							}
+							else {
+								item.set('message', 'No service result'); 
+							}
+							
+							// Save AJAX response in store
+							item.set('response', store.proxy.response.priv.responseText);
+							item.set('request', store.proxy.protocol.options.url);
+							item.commit();
+						});
+						
+						// Reset store filter
+						store.clearFilter(true);
+					}
+				}
+			}
+		});
+
+		var catchStore = new GeoExt.data.FeatureStore({
+			layer: polygon,
+			root: 'features',
+			fields: [
+				{ name: 'from', mapping: 'state' },
+				{ name: 'service', mapping: 'service' }
+			],
+	        proxy: new GeoExt.data.ProtocolProxy({
+	            protocol: new OpenLayers.Protocol.HTTP({
+	                url: OpenLayers.ProxyHost,
+	                format: new OpenLayers.Format.GeoJSON()
+	            })
+	        }),
+			listeners: {
+				load: function(store, records, options){
+					Ext.each(records, function(item){
+						item.set('center', options.params.center);
+						item.set('service', options.params.service);
+						item.commit();
+					});
+					
+					if(pointStore){
+						var points = pointStore.query('id', options.params.center);
+						points.each(function(item){ 
+							if(records.length > 0){
+								item.set('message', 'Area found [Distance: ' 
+											+ Ext.getCmp('menu-catch-limits').getValue() + ']'); 
+								item.set('total', '---'); 
+							}
+							else {
+								item.set('message', 'No service result'); 
+							}
+							
+							// Save AJAX response in store
+							item.set('response', store.proxy.response.priv.responseText);
+							item.set('request', store.proxy.protocol.options.url);
+							item.commit();
+						});
+					}
+				}
+			}
+		});
+		
+		var pointStore = new GeoExt.data.FeatureStore({
+	        layer: points,
+			root: '',
+			fields: [
+				{ name: 'service', defaultValue: '---' },
+				{ name: 'total', type: 'float', defaultValue: 0 }
+			],
+			listeners: {
+				add: function(store,records,idx){
+													
+					records[0].data['message'] = 'Searching ...';
+					records[0].data['service'] = service;
+					records[0].data['total'] = 0;
+					records[0].data['id'] = records[0].data.feature.id;
+
+					switch(service){
+						case 'route':
+							var url = OpenLayers.ProxyHost + '/' 
+										+ capabilities.data.items[0].data.name
+										+ '/route.geojson';
+
+							if(idx > 0){	
+								var start = store.getAt(idx-1);	
+								p1 = start.data.feature.geometry;
+								p2 = records[0].data.feature.geometry;
+								
+								var json = { 
+									points: [
+										p1.x + ' ' + p1.y, 
+										p2.x + ' ' + p2.y
+									], 
+									crs: worldmap.projection
+								};
+								
+								routeStore.proxy.protocol.options.url = 
+											url + '&json=' + Ext.encode(json);
+								routeStore.load({ 
+									add: true,
+									params: {
+										from: start.data.id,
+										to: records[0].data.id,
+										service: 'route'
+									}
+								});	
+							}
+							else{
+								records[0].data['message'] = 'Starting point';
+							}
+							break;
+							
+						case 'catch':
+							var url = OpenLayers.ProxyHost + '/' 
+										+ capabilities.data.items[0].data.name
+										+ '/catch.geojson';
+
+							p1 = records[0].data.feature.geometry;
+							
+							var json = { 
+								points: [ p1.x + ' ' + p1.y ], 
+								distance: Ext.getCmp('menu-catch-limits').getValue(),
+								crs: worldmap.projection
+							};
+							
+							catchStore.proxy.protocol.options.url = 
+										url + '&json=' + Ext.encode(json);
+							catchStore.load({ 
+								add: true,
+								params: {
+									center: records[0].data.id,
+									service: 'catch'
+								}
+							});
+							break;
+							
+						case 'geocode':
+							break;
+					}	
+				},
+				remove: function(store,record,idx){
+					var from = routeStore.query('from',record.data.id);
+					var to = routeStore.query('to',record.data.id);
+
+					from.each(function(item){ routeStore.remove(item); });
+					to.each(function(item){ routeStore.remove(item); });
+
+					var center = catchStore.query('center',record.data.id);
+					center.each(function(item){ catchStore.remove(item); });
+					
+					// is there a new end point?
+					if(store.getAt(idx)){
+						var url = OpenLayers.ProxyHost + '/' 
+									+ capabilities.data.items[0].data.name
+									+ '/route.geojson';
+
+						var end = store.getAt(idx);
+						
+						// is the service 'route'?
+						if(end.data.service == 'route'){
+							
+							// is there a new start point?
+							if(store.getAt(idx-1)){
+								var start = store.getAt(idx-1);
+								p1 = start.data.feature.geometry;
+								p2 = end.data.feature.geometry;
+								
+								var json = { 
+									points: [
+										p1.x + ' ' + p1.y, 
+										p2.x + ' ' + p2.y
+									], 
+									crs: worldmap.projection
+								};
+								
+								routeStore.proxy.protocol.options.url = 
+											url + '&json=' + Ext.encode(json);
+								routeStore.load({ 
+									add: true,
+									params: {
+										from: start.data.id,
+										to: end.data.id,
+										service: 'route'
+									}
+								});	
+								end.data['message'] = 'Searching ...';
+								end.data['total'] = 0;
+							}
+						}
+					}
+				}
+			}
+	    });
+		
+		var pointGrid = new Ext.grid.GridPanel({
+			region: 'center',
+			layout: 'fit',
+			border : false,
+			autoSizeColumns: true,
+			loadMask: true,
+			autoScroll: true,
+			autoWidth: true,
+			viewConfig: { forceFit: true },
+			store: pointStore,
+			cm: new Ext.grid.ColumnModel([
+				new Ext.grid.RowNumberer(),
+				{ header: 'Message', dataIndex: 'message' },
+				{ header: 'Total', dataIndex: 'total', width: 40, align: 'right' },
+				{ width: 40, menuDisabled: true, hideable: false, 
+					renderer: function(quote) {
+						return '<a href="#">Remove</a>';
+					}
+				}
+			]),
+			sm: new GeoExt.grid.FeatureSelectionModel({
+				listeners: {
+					rowselect: function(sm,idx,rec){
+						var from = routeStore.query('from',rec.data.id);
+						from.each(function(item){ 
+							//highlight features
+						});
+
+						var to = routeStore.query('to',rec.data.id);
+						to.each(function(item){ 
+							//highlight features 
+						});
+	
+						var center = catchStore.query('center',rec.data.id);
+						center.each(function(item){ 
+							//highlight features  
+						});
+					},
+					rowdeselect: function(sm,idx,rec){
+						var from = routeStore.query('from',rec.data.id);
+						from.each(function(item){ 
+							//turn off highlight features 
+						});
+
+						var to = routeStore.query('to',rec.data.id);
+						to.each(function(item){ 
+							//turn off highlight features 
+						});
+	
+						var center = catchStore.query('center',rec.data.id);
+						center.each(function(item){ 
+							//turn off highlight features  
+						});
+					}
+				}
+			}),
+			listeners: {
+				cellclick: function(grid, rowIndex, colIndex){
+					if(colIndex > 0) {
+						var store = grid.getStore();
+						var record = store.getAt(rowIndex);  // Get the Record
+						var field = grid.getColumnModel().getDataIndex(colIndex); // Get field name
+						var data = record.get(field);
+						
+						//delete column
+						if(colIndex == 3) {
+							store.remove(record);
+							grid.getView().refresh();
+						}
+					}
+				},
+				rowdblclick: function(grid,rowIndex,evt){
+					var store = grid.getStore();
+					var record = store.getAt(rowIndex);  
+					
+					if(record.data.request){
+						var url = record.data.request.split('url=');
+						Ext.getCmp('waypoint-url').setValue(url[1].replace(/&json/,'?json'));
+						
+						var request = record.data.request.split('json=');
+						var requestJson = Ext.decode(request[1]);
+						Ext.getCmp('waypoint-request').setValue(prettyJson(requestJson));
+						
+						var responseJson = Ext.decode(record.data.response);
+						Ext.getCmp('waypoint-response').setValue(prettyJson(responseJson));
+
+						pointPopup.show();
+					}
+				}
+			}
+		});
+		
+		var catchGrid = new Ext.grid.GridPanel({
+			store: catchStore,
+			cm: new Ext.grid.ColumnModel([
+				{ header: 'Message', dataIndex: 'message' }
+			]),
+			sm: new GeoExt.grid.FeatureSelectionModel()
+		});
+		
+		/**
+		 * WRS Profile Store
+		 */
+		var profileStore = new Ext.data.Store({
+			url: 'data/profiles.xml',
+			autoLoad: true,
+			reader: new Ext.data.XmlReader({
+				record: 'profile',
+				id: '@name'
+			},[
+				{ name: 'name', mapping: '@name' },
+				{ name: 'title', mapping: '@title' },
+				{ name: 'description', mapping: 'description' }
+			])
+		});
+		
+		var profileMenu = {  
+            xtype: 'buttongroup',
+            title: 'Profile',
+			columns: 2,
+            defaults: {
+                scale: 'large',
+                iconAlign: 'left'
+            },
+			items: [{
+				xtype: 'combo',
+		        mode: 'local',
+				id: 'combo-select-profile',
+				store: profileStore,
+		        emptyText: 'Select Profile...',
+		        displayField: 'title',
+				hiddenName: 'name', 
+		        valueField: 'name',
+				editable: false,
+		        forceSelection: true,
+		        triggerAction: 'all',
+		        selectOnFocus: true,
+				listeners: {
+					select: function(combo, record, idx){
+						// Get profile capabilties
+						var url = OpenLayers.ProxyHost + '/' 
+									+ record.data.name + '/capabilities.json'
+						capabilities.proxy.setUrl(url, true);
+						capabilities.load();
+					}
+				}
+			},{
+				xtype: 'tbbutton',
+				iconCls: 'button-icon-profile-info',
+				id: 'button-profile-info',
+				disabled: true,
+				handler: function(evt){
+					if(capabilities){
+						var url = capabilities.proxy.url.split('url=');
+						Ext.getCmp('capabilities-url').setValue(url[1]);
+
+						var json = prettyJson(capabilities.reader.jsonData);
+						Ext.getCmp('capabilities-json').setValue(json);
+						profilePopup.show();
+					}
+				}
+			}]
+		};
+		
+		var serviceMenu = {
+            xtype: 'buttongroup',
+			id: 'button-services',
+            title: 'Services',
+			columns: 3,
+            defaults: {
+                scale: 'large',
+                iconAlign: 'left',
+				disabled: true, 
+				toggleGroup: 'toggle-services',
+	        	allowDepress: false,
+				listeners: {
+					toggle: function(btn,state){
+						if(state){
+							Ext.getCmp(btn.menuRef).show();
+							service = btn.service;
+						}
+						else{
+							Ext.getCmp(btn.menuRef).items.each(function(i){
+								if(i.type == 'button'){
+									i.toggle(false);
+								}
+							});
+							Ext.getCmp(btn.menuRef).hide();
+						}
+					}
+				}
+            },
+			items: [{
+				text: 'Shortest Path',
+				id: 'button-route',
+				menuRef: 'menu-route',
+				service: 'route',
+				iconCls: 'button-icon-shortest-path'
+			},{
+				text: 'Driving Distance',
+				id: 'button-catch',
+				menuRef: 'menu-catch',
+				service: 'catch',
+				iconCls: 'button-icon-driving-distance'
+			},{
+				text: 'Geocoder',
+				id: 'button-geocode',
+				menuRef: 'menu-geocode',
+				service: 'geocode',
+				iconCls: 'button-icon-geocode'
+			}]
+		};
+		
+		var defaultMenu = {
+            xtype: 'buttongroup',
+			id: 'menu-default',
+			frame: false,
+            defaults: {
+                scale: 'small',
+                iconAlign: 'left'
+            },
+			items: [{ xtype: 'tbseparator' },{
+				text: 'Reset all',
+				iconCls: 'button-icon-default-reset',
+				handler: function(evt){
+					pointStore.removeAll();
+					routeStore.removeAll();
+					catchStore.removeAll();
+				}
+			},{ xtype: 'tbseparator' }]
+		};
+		
+		var routeMenu = {
+            xtype: 'buttongroup',
+			id: 'menu-route',
+			hidden: true,
+			frame: false,
+            defaults: {
+                scale: 'small',
+                iconAlign: 'left'
+            },
+			items: [{ xtype: 'tbseparator' }, 
+				new GeoExt.Action({
+			        text: "Set Point",
+					iconCls: 'button-icon-start-add',
+			        map: worldmap,
+			        toggleGroup: "menu-route",
+			        group: "menu-route",
+			        control: new OpenLayers.Control.DrawFeature(
+			            points, OpenLayers.Handler.Point
+			        )
+			    }),
+				{ xtype: 'tbseparator' }
+			]
+		};
+		
+		var catchMenu = {
+            xtype: 'buttongroup',
+			id: 'menu-catch',
+			hidden: true,
+			frame: false,
+            defaults: {
+                scale: 'small',
+                iconAlign: 'left'
+            },
+			items: [{ xtype: 'tbseparator' }, 
+				new GeoExt.Action({
+			        text: "Set Point",
+					iconCls: 'button-icon-start-add',
+			        map: worldmap,
+			        toggleGroup: "menu-catch",
+			        group: "menu-catch",
+			        control: new OpenLayers.Control.DrawFeature(
+			            points, OpenLayers.Handler.Point
+			        )
+			    }),
+				{ xtype: 'tbseparator' },{
+					xtype: 'tbtext',
+					text: 'Within: '
+				},{
+					xtype: 'textfield',
+					id: 'menu-catch-limits',
+			        emptyText: 'Type limit...',
+					regex: /[^%_*?!&;:,]/,
+					enableKeyEvents: true,
+					allowBlank: false,
+					width: 80,
+					style: {
+						'text-align': 'right'
+					}
+				},{
+					xtype: 'tbtext',
+					id: 'menu-catch-units',
+					width: 80,
+					text: ' [dd] '
+				}
+			]
+		};
+		
+		var geocodeMenu = {
+            xtype: 'buttongroup',
+			id: 'menu-geocode',
+			hidden: true,
+			frame: false,
+            defaults: {
+                scale: 'small',
+                iconAlign: 'left'
+            },
+			items: [{
+				text: 'Set Point',
+				id: 'menu-geocode-set',
+				iconCls: 'button-icon-start-add',
+				enableToggle: true,
+				handler: function(evt){
+					pointStore.removeAt(pointStore.getCount()-1);
+				}
+			},{
+				xtype: 'tbseparator'
+			},{
+				xtype: 'tbtext',
+				text: 'Address: '
+			},{
+				xtype: 'textfield',
+				id: 'menu-geocode-search',
+		        emptyText: 'Type address...',
+				regex: /[^%_*?!&;:,]/,
+				enableKeyEvents: true,
+				listeners: {
+					keypress: function(form, evt){ 
+						if(evt.getKey() == Ext.EventObject.ENTER){
+							//console.info('geocode');
+						}
+					}
+				}
+			},{
+				id: 'button-geocoder',
+				iconCls: 'button-icon-geocode-locate',
+				handler: function(){
+					//console.info('geocode');
+				}					
+			}]
+		};
+		
+		/**
+		 * Viewport Layout 
+		 */
+		var viewport = new Ext.Viewport({
+			layout: 'border',
+			renderTo: Ext.getBody(),
+			listeners : {
+				afterlayout: function() {
+					Ext.get('loading').hide();
+				}
+			},
+			items: [{
+					region: 'north',
+					html: '<h3>OpenVRP Routing</h3>',
+					baseCls: 'openvrp-header-panel',
+					height: 100
+				},{
+				region: 'center',
+				layout: 'border',
+				border: false,
+				tbar: [ profileMenu, serviceMenu ],
+				items: [{
+					region: 'center',
+					xtype: 'gx_mappanel',
+					border: false,
+					layers: [ 
+						osm, cycle, gmap, gsat, ghyb, 
+						polygon, routes, points 
+					],
+					map: worldmap,
+					center: defaultCenter.transform(
+						projection, 
+						new OpenLayers.Projection("EPSG:900913")
+					),
+					zoom: 7,
+					tbar: new Ext.Toolbar({
+						items: [ routeMenu, catchMenu, geocodeMenu, '->', defaultMenu ]
+					}),
+					bbar: new Ext.Toolbar({
+						items: [
+							{ xtype: 'tbtext', text: 'OpenVRP Engine - powered by WebSI-Cola' },"->",
+						{ xtype: "tbtext", text: 'Data/Maps Copyright 2010 <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap and contributors</a> | License: <a href="http://creativecommons.org/licenses/by-sa/2.0/" target="_blank">Creative Commons BY-SA</a>' }
+						]
+					})
+				},{
+					region: 'east',
+					xtype: 'tabpanel',
+					header: false,
+					activeTab: 0, 
+					border: false,
+					split: true,
+					collapsible: true,
+					collapseMode: 'mini',
+					hideCollapseTool: true,
+					resizeTabs: true,
+					width: 300,
+					minSize: 250,
+					items: [{ 
+							title: 'Details', 
+							xtype: 'panel', 
+							region: 'center',
+							layout: 'border',
+							border: false,
+							items: [ pointGrid ] 
+						}
+					],
+					bbar: new Ext.Toolbar({
+						items: [
+							'->', { xtype: 'tbtext', text: 'Georepubluc UG & Georepublic Japan &copy;2010' }
+						]
+					})
+				}]
+			}]
+		});
+	});
+	
+	/**
+	 * 
+	 * @param {Object} json
+	 */
+	function prettyJson(json){
+		
+		var encoded = Ext.util.JSON.encode(json);
+				
+		var formatted = js_beautify(
+			encoded.replace(/^\s+/, ''), {
+				indent_size: 1, 
+				indent_char: '\t', 
+				preserve_newlines: true, 
+				space_after_anon_function: true
+			}
+		);
+		return formatted;
+	}
+	
+	function getTileURL(bounds) {
+		var res = this.map.getResolution();
+		var x = Math.round((bounds.left - this.maxExtent.left) / (res * this.tileSize.w));
+		var y = Math.round((this.maxExtent.top - bounds.top) / (res * this.tileSize.h));
+		var z = this.map.getZoom();
+		var limit = Math.pow(2, z);
+		
+		if (y < 0 || y >= limit){
+			return null;
+		}
+		else {
+			x = ((x % limit) + limit) % limit;
+			
+			var url = this.url;
+			var path = z + "/" + x + "/" + y + ".png";
+			
+			if (url instanceof Array) {
+				url = this.selectUrl(path, url);
+			}
+			return url + path;
+		}
+	}
+	</script>
+</body>
+</html>
+
