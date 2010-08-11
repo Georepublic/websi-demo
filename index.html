@@ -711,8 +711,7 @@
 		 * WRS Profile Store
 		 */
 		var profileStore = new Ext.data.Store({
-			url: 'data/profiles.xml',
-			autoLoad: true,
+			url: './data/profiles.xml',
 			reader: new Ext.data.XmlReader({
 				record: 'profile',
 				id: '@name'
@@ -722,21 +721,17 @@
 				{ name: 'description', mapping: 'description' }
 			])
 		});
+		profileStore.load();
 
 		var profileMenu = {  
 			xtype: 'buttongroup',
 			title: 'Profile',
 			columns: 2,
-			defaults: {
-				scale: 'large',
-				iconAlign: 'left'
-			},
 			items: [{
 				xtype: 'combo',
 				mode: 'local',
-				id: 'combo-select-profile',
-				store: profileStore,
-				emptyText: 'Select Profile...',
+				//store: profileStore,
+				emptyText: 'Select Profile ...',
 				displayField: 'title',
 				hiddenName: 'name', 
 				valueField: 'name',
@@ -744,6 +739,7 @@
 				forceSelection: true,
 				triggerAction: 'all',
 				selectOnFocus: true,
+				id: 'combo-select-profile',
 				listeners: {
 					select: function(combo, record, idx){
 						// Get profile capabilties
@@ -799,19 +795,19 @@
 				}
 			},
 			items: [{
-				text: 'Shortest Path',
+				text: 'Route',
 				id: 'button-route',
 				menuRef: 'menu-route',
 				service: 'route',
 				iconCls: 'button-icon-shortest-path'
 			},{
-				text: 'Driving Distance',
+				text: 'Catch',
 				id: 'button-catch',
 				menuRef: 'menu-catch',
 				service: 'catch',
 				iconCls: 'button-icon-driving-distance'
 			},{
-				text: 'Geocoder',
+				text: 'Locate',
 				id: 'button-geocode',
 				menuRef: 'menu-geocode',
 				service: 'geocode',
@@ -1002,8 +998,8 @@
 					collapseMode: 'mini',
 					hideCollapseTool: true,
 					resizeTabs: true,
-					width: 550,
-					minSize: 550,
+					width: 445,
+					minSize: 445,
 					items: [ pointGrid ],
 					tbar: [ profileMenu, serviceMenu ],
 					bbar: new Ext.Toolbar({
