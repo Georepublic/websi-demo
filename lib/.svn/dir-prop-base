@@ -1,9 +1,0 @@
-K 13
-svn:externals
-V 188
-openlayers http://svn.openlayers.org/trunk/openlayers
-geoext http://svn.geoext.org/core/trunk/geoext
-proj4js http://svn.osgeo.org/metacrs/proj4js/trunk
-ext http://svn.geoext.org/ext/3.0.0
-
-END
