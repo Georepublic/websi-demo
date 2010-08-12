@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <profiles xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:noNamespaceSchemaLocation="http://wrs.postlbs.org/xsd/1.1.0/profile.xsd">
-	
-	<profile name="a7391e864abf6d56c9f9b3784a88bbc7" title="Standard, Japan (HCC)">
+
+	<!--profile name="a7391e864abf6d56c9f9b3784a88bbc7" title="Standard, Japan">
 		<description>My test profile I use for testing</description>
 		<parameters>
 			<parameter name="srid_in" type="integer" key="srid" value="EPSG:4326" />
@@ -13,9 +13,9 @@
 			<rref ref="pgrouting" enabled="true" />
 			<rref ref="geocoder" enabled="true" />
 		</resources>
-	</profile>
-	
-	<profile name="9d12c2a0e16c88b9a8d8e8f9f05350bc" title="Pedestrian, Japan (HCC)">
+	</profile-->
+
+	<!--profile name="9d12c2a0e16c88b9a8d8e8f9f05350bc" title="Pedestrian, Japan">
 		<description>Pedestrian routing, HCC data for Japan</description>
 		<parameters>
 			<parameter name="srid_in" type="integer" key="srid" value="EPSG:4326" />
@@ -26,9 +26,9 @@
 		<resources>
 			<rref ref="pgrouting" enabled="true" />
 		</resources>
-	</profile>	
-	
-	<profile name="21cbcaa6f63ecb84cc4c45f221dbf753" title="Toll free, Japan (HCC)">
+	</profile-->
+
+	<!--profile name="21cbcaa6f63ecb84cc4c45f221dbf753" title="Toll free, Japan">
 		<description>Toll free cars routing, HCC data for Japan</description>
 		<parameters>
 			<parameter name="srid_in" type="integer" key="srid" value="EPSG:4326" />
@@ -39,9 +39,9 @@
 		<resources>
 			<rref ref="pgrouting" enabled="true" />
 		</resources>
-	</profile>	
+	</profile-->
 
-	<profile name="9f1558169f73db843ea641cad8289df0" title="Interurban, Japan (HCC)">
+	<!--profile name="9f1558169f73db843ea641cad8289df0" title="Interurban, Japan">
 		<description>Interurban cars routing, HCC data for Japan</description>
 		<parameters>
 			<parameter name="srid_in" type="integer" key="srid" value="EPSG:4326" />
@@ -52,74 +52,68 @@
 		<resources>
 			<rref ref="pgrouting" enabled="true" />
 		</resources>
-	</profile>	
-	
-	<profile name="19070025e2ca2c0a65f29e8bcf8dc1e4" title="Pedestrians, Sydney (m)">
-		<description>Pedestrian routing for Sydney, Australia (OSM)</description>
+	</profile-->
+
+	<profile name="19070025e2ca2c0a65f29e8bcf8dc1e4" title="Pedestrians, Barcelona (m)">
+		<description>Pedestrian routing for Barcelona, Spain (OSM)</description>
 		<parameters>
 			<parameter name="srid_in" type="integer" key="srid" value="EPSG:4326" />
 			<parameter name="srid_extent" type="integer" key="srid_extent" value="EPSG:4326" />
 			<parameter name="table" type="string" key="table" value="osm_pedestrians" />
-			<parameter name="extent" type="string" key="extent" value="150.496 -34.215, 151.355 -33.469" />
+			<parameter name="extent" type="string" key="extent" value="1.998653 41.27, 2.343693 41.495207" />
 		</parameters>
 		<resources>
 			<rref ref="osm_pgrouting" enabled="true" />
 		</resources>
-	</profile>		
+	</profile>
 
-	<profile name="5a9c3394c9927fb569ff884ae76c7b35" title="Cars, Sydney (m)">
-		<description>Car routing for Sydney, Australia (OSM)</description>
+	<profile name="5a9c3394c9927fb569ff884ae76c7b35" title="Cars, Barcelona (m)">
+		<description>Car routing for Barcelona, Spain (OSM)</description>
 		<parameters>
 			<parameter name="srid_in" type="integer" key="srid" value="EPSG:4326" />
 			<parameter name="srid_extent" type="integer" key="srid_extent" value="EPSG:4326" />
 			<parameter name="table" type="string" key="table" value="osm_cars" />
-			<parameter name="extent" type="string" key="extent" value="150.496 -34.215, 151.355 -33.469" />
+			<parameter name="extent" type="string" key="extent" value="1.998653 41.27, 2.343693 41.495207" />
 		</parameters>
 		<resources>
 			<rref ref="osm_pgrouting" enabled="true" />
 		</resources>
-	</profile>	
+	</profile>
 	
-	<profile name="1febf6d3c0175d6e80ce90cb23fcb852" title="Pedestrians, Sydney (h)">
-		<description>Pedestrian routing for Sydney, Australia (OSM), Time</description>
+	<profile name="1febf6d3c0175d6e80ce90cb23fcb852" title="Pedestrians, Barcelona (h)">
+		<description>Pedestrian routing for Barcelona, Spain (OSM), Time</description>
 		<parameters>
 			<parameter name="srid_in" type="integer" key="srid" value="EPSG:4326" />
 			<parameter name="srid_extent" type="integer" key="srid_extent" value="EPSG:4326" />
 			<parameter name="table" type="string" key="table" value="osm_pedestrians" />
-			<parameter name="extent" type="string" key="extent" value="150.496 -34.215, 151.355 -33.469" />
-			
+			<parameter name="extent" type="string" key="extent" value="1.998653 41.27, 2.343693 41.495207" />
 			<parameter name="units" constant="true" type="string" key="units" value="hours" />
-			
 			<parameter name="cost_value" type="string" key="cost_value" value="time" />
 			<parameter name="reverse_cost_value" type="string" key="reverse_cost_value" value="time_rc" />
 			<parameter name="cost" type="double" key="a.time"/>
 			<parameter name="rlength" type="double" key="b.time"/>
-			
 		</parameters>
 		<resources>
 			<rref ref="osm_pgrouting" enabled="true" />
 		</resources>
-	</profile>		
+	</profile>
 
-	<profile name="be5303adfbe65f80e29a80ff3814dab5" title="Cars, Sydney (h)">
-		<description>Car routing for Sydney, Australia (OSM), Time</description>
+	<profile name="be5303adfbe65f80e29a80ff3814dab5" title="Cars, Barcelona (h)">
+		<description>Car routing for Barcelona, Spain (OSM), Time</description>
 		<parameters>
 			<parameter name="srid_in" type="integer" key="srid" value="EPSG:4326" />
 			<parameter name="srid_extent" type="integer" key="srid_extent" value="EPSG:4326" />
 			<parameter name="table" type="string" key="table" value="osm_cars" />
-			<parameter name="extent" type="string" key="extent" value="150.496 -34.215, 151.355 -33.469" />
-			
+			<parameter name="extent" type="string" key="extent" value="1.998653 41.27, 2.343693 41.495207" />
 			<parameter name="units" constant="true" type="string" key="units" value="hours" />
-
 			<parameter name="cost_value" type="string" key="cost_value" value="time" />
 			<parameter name="reverse_cost_value" type="string" key="reverse_cost_value" value="time_rc" />
 			<parameter name="cost" type="double" key="b.time"/>
 			<parameter name="rlength" type="double" key="b.time"/>
-
 		</parameters>
 		<resources>
 			<rref ref="osm_pgrouting" enabled="true" />
 		</resources>
-	</profile>		
+	</profile>
 
 </profiles>
