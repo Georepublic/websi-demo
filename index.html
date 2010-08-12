@@ -2,7 +2,7 @@
 <html>
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-	<title>OpenVRP Routing - powered by WebSI Cola</title>
+	<title>OpenVRP Router - powered by WebSI Cola</title>
 
 	<link rel="shortcut icon" href="img/favicon.ico" />
 	<link rel="stylesheet" type="text/css" href="lib/ext-3.2.1/resources/css/ext-all.css"></link>
@@ -18,7 +18,7 @@
 			<img src="img/loading-icon.gif"/>
 			<span id="loading-title">
 				<script type="text/javascript">
-					document.write("OpenVRP Engine - Demo");
+					document.write("OpenVRP Router - Demo");
 				</script>
 			</span><br/>
 			<span id="loading-msg">
@@ -47,7 +47,7 @@
 
 	OpenLayers.IMAGE_RELOAD_ATTEMPTS = 5;
 	OpenLayers.Util.onImageLoadErrorColor = 'transparent';
-	Ext.BLANK_IMAGE_URL = 'lib/ext/resources/images/default/s.gif';
+	Ext.BLANK_IMAGE_URL = 'lib/ext-3.2.1/resources/images/default/s.gif';
 
 	Ext.onReady(function() {
 		/**
@@ -154,7 +154,7 @@
 			closeAction: 'hide',
 			items: [
 				new Ext.TabPanel({
-				    activeTab: 0,
+					activeTab: 0,
 					resizeTabs: true,
 					border: false,
 					items: [
@@ -711,7 +711,8 @@
 		 * Profile Store
 		 */
 		var profileStore = new Ext.data.Store({
-			url: 'data/profiles.xml',
+			url: './data/profiles.xml',
+			autoLoad: true,
 			reader: new Ext.data.XmlReader({
 				record: 'profile',
 				id: '@name'
@@ -721,7 +722,6 @@
 				{ name: 'description', mapping: 'description' }
 			])
 		});
-		profileStore.load();
 
 		var profileMenu = {  
 			xtype: 'buttongroup',
@@ -734,7 +734,8 @@
 			items: [{
 				xtype: 'combo',
 				mode: 'local',
-				//store: profileStore,
+				store: profileStore,
+				width: 170,
 				emptyText: 'Select Profile ...',
 				displayField: 'title',
 				hiddenName: 'name', 
@@ -827,7 +828,7 @@
 				scale: 'small',
 				iconAlign: 'left'
 			},
-			items: [{ xtype: 'tbseparator' },{
+			items: [{
 				text: 'Reset all',
 				iconCls: 'button-icon-default-reset',
 				handler: function(evt){
@@ -835,7 +836,7 @@
 					routeStore.removeAll();
 					catchStore.removeAll();
 				}
-			},{ xtype: 'tbseparator' }]
+			}]
 		};
 
 		var routeMenu = {
@@ -962,7 +963,7 @@
 			},
 			items: [{
 					region: 'north',
-					html: '<h3>OpenVRP Routing</h3>',
+					html: '<h3>OpenVRP Router</h3>',
 					baseCls: 'openvrp-header-panel',
 					height: 100
 				},{
@@ -974,8 +975,7 @@
 					xtype: 'gx_mappanel',
 					border: false,
 					layers: [ 
-						osm, cycle, gmap, gsat, ghyb, 
-						polygon, routes, points 
+						osm, cycle, gmap, gsat, ghyb, polygon, routes, points 
 					],
 					map: worldmap,
 					center: defaultCenter.transform(
@@ -988,7 +988,7 @@
 					}),
 					bbar: new Ext.Toolbar({
 						items: [
-							{ xtype: 'tbtext', text: 'OpenVRP Engine - powered by WebSI-Cola' },"->",
+							{ xtype: 'tbtext', text: 'OpenVRP Router - powered by WebSI-Cola' },"->",
 						{ xtype: "tbtext", text: 'Data/Maps Copyright 2010 <a href="http://www.openstreetmap.org/" target="_blank">OpenStreetMap and contributors</a> | License: <a href="http://creativecommons.org/licenses/by-sa/2.0/" target="_blank">Creative Commons BY-SA</a>' }
 						]
 					})
@@ -1002,13 +1002,13 @@
 					collapseMode: 'mini',
 					hideCollapseTool: true,
 					resizeTabs: true,
-					width: 445,
-					minSize: 445,
+					width: 447,
+					minSize: 447,
 					items: [ pointGrid ],
 					tbar: [ profileMenu, serviceMenu ],
 					bbar: new Ext.Toolbar({
 						items: [
-							'->', { xtype: 'tbtext', text: 'Georepubluc UG & Georepublic Japan &copy;2010' }
+							{ xtype: 'tbtext', text: '<a href="http://georepublic.de" target="_blank">Georepublic UG</a> & <a href="http://georepublic.co.jp" target="_blank">Georepublic Japan</a> &copy;2010' }
 						]
 					})
 				}]
