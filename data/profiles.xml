@@ -59,11 +59,11 @@
 		<parameters>
 			<parameter name="srid_in" type="integer" key="srid" value="EPSG:4326" />
 			<parameter name="srid_extent" type="integer" key="srid_extent" value="EPSG:4326" />
-			<parameter name="table" type="string" key="table" value="osm_pedestrians" />
+			<parameter name="table" type="string" key="table" value="ways" />
 			<parameter name="extent" type="string" key="extent" value="1.998653 41.27, 2.343693 41.495207" />
 		</parameters>
 		<resources>
-			<rref ref="osm_pgrouting" enabled="true" />
+			<rref ref="pgrouting" enabled="true" />
 		</resources>
 	</profile>
 
@@ -72,15 +72,15 @@
 		<parameters>
 			<parameter name="srid_in" type="integer" key="srid" value="EPSG:4326" />
 			<parameter name="srid_extent" type="integer" key="srid_extent" value="EPSG:4326" />
-			<parameter name="table" type="string" key="table" value="osm_cars" />
+			<parameter name="table" type="string" key="table" value="ways" />
 			<parameter name="extent" type="string" key="extent" value="1.998653 41.27, 2.343693 41.495207" />
 		</parameters>
 		<resources>
-			<rref ref="osm_pgrouting" enabled="true" />
+			<rref ref="pgrouting" enabled="true" />
 		</resources>
 	</profile>
 	
-	<profile name="1febf6d3c0175d6e80ce90cb23fcb852" title="Pedestrians, Barcelona (h)">
+	<!--profile name="1febf6d3c0175d6e80ce90cb23fcb852" title="Pedestrians, Barcelona (h)">
 		<description>Pedestrian routing for Barcelona, Spain (OSM), Time</description>
 		<parameters>
 			<parameter name="srid_in" type="integer" key="srid" value="EPSG:4326" />
@@ -96,9 +96,9 @@
 		<resources>
 			<rref ref="osm_pgrouting" enabled="true" />
 		</resources>
-	</profile>
+	</profile-->
 
-	<profile name="be5303adfbe65f80e29a80ff3814dab5" title="Cars, Barcelona (h)">
+	<!--profile name="be5303adfbe65f80e29a80ff3814dab5" title="Cars, Barcelona (h)">
 		<description>Car routing for Barcelona, Spain (OSM), Time</description>
 		<parameters>
 			<parameter name="srid_in" type="integer" key="srid" value="EPSG:4326" />
@@ -114,6 +114,6 @@
 		<resources>
 			<rref ref="osm_pgrouting" enabled="true" />
 		</resources>
-	</profile>
+	</profile-->
 
 </profiles>
