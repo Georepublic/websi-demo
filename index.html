@@ -419,6 +419,7 @@
 						item.set('service', options.params.service);
 						item.commit();
 					});
+					
 
 					if(pointStore){
 						// Filter current route segments (for path length)
@@ -620,13 +621,15 @@
 		var pointGrid = new Ext.grid.GridPanel({
 			region: 'center',
 			layout: 'fit',
-			border : false,
+			border: false,
 			autoSizeColumns: true,
 			loadMask: true,
 			autoScroll: true,
 			autoWidth: true,
+			autoHeight: true,
 			viewConfig: { forceFit: true },
 			store: pointStore,
+			height: 100,
 			cm: new Ext.grid.ColumnModel([
 				new Ext.grid.RowNumberer(),
 				{ header: 'Message', dataIndex: 'message' },
