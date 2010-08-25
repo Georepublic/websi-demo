@@ -81,6 +81,17 @@
 			fields: ['name','title','description',
 						'parameters','services'],
 			listeners: {
+				beforeload: function(store,options) {
+					Ext.MessageBox.show({
+						msg: 'Requesting capabilities document ...',
+						progressText: 'Connecting ...',
+						width: 300,
+						wait: true,
+						waitConfig: {interval:200},
+						//icon: 'ext-mb-download', //custom class in msg-box.html
+						animEl: 'wait-capabilities'
+					});
+				},
 				load: function(store, records, options){
 					
 					var rdata = records[0].data;
@@ -137,6 +148,13 @@
 						Ext.getCmp('menu-catch-limits').setValue(5000);
 						Ext.getCmp('menu-catch-units').setText(' [m]');
 					}
+					
+					// Draw service extent
+					area.destroyFeatures();
+					var feature = new OpenLayers.Feature.Vector(bounds.toGeometry());
+					area.addFeatures([feature]);
+
+					Ext.MessageBox.hide();
 				}
 			}
 		});
@@ -358,12 +376,26 @@
 		/**
 		 * Vector Layers
 		 */
+		var area = new OpenLayers.Layer.Vector(" Service Extent",{
+			styleMap: new OpenLayers.StyleMap({
+				'default': OpenLayers.Util.applyDefaults({
+					strokeWidth: 4,
+					strokeColor: '#FF7F00',
+					fill: false
+					}, OpenLayers.Feature.Vector.style["default"]), 
+				'select': {
+					strokeColor: '#FF7F00',
+					fill: false
+				}
+			})
+		});
+		
 		var points = new OpenLayers.Layer.Vector(" Point Layer",{
 			styleMap: new OpenLayers.StyleMap({
 				'default': OpenLayers.Util.applyDefaults({
-						externalGraphic: './img/dd.png',
-						graphicOpacity: 1.0,
-						pointRadius: 16
+					externalGraphic: './img/dd.png',
+					graphicOpacity: 1.0,
+					pointRadius: 16
 					}, OpenLayers.Feature.Vector.style["default"]), 
 				'select': {
 					pointRadius: 20
@@ -374,8 +406,8 @@
 		var routes = new OpenLayers.Layer.Vector(" Route Layer",{
 			styleMap: new OpenLayers.StyleMap({
 				'default': OpenLayers.Util.applyDefaults({
-						strokeWidth: 4,
-						strokeColor: '#27ca43'
+					strokeWidth: 4,
+					strokeColor: '#27ca43'
 					}, OpenLayers.Feature.Vector.style["default"]), 
 				'select': {
 					strokeColor: '#a52a2a'
@@ -386,9 +418,9 @@
 		var polygon = new OpenLayers.Layer.Vector(" Catch Layer",{
 			styleMap: new OpenLayers.StyleMap({
 				'default': OpenLayers.Util.applyDefaults({
-						strokeWidth: 4,
-						strokeColor: '#4620ce',
-						fillColor: '#4620ce'
+					strokeWidth: 4,
+					strokeColor: '#4620ce',
+					fillColor: '#4620ce'
 					}, OpenLayers.Feature.Vector.style["default"]), 
 				'select': {
 					strokeWidth: 5
@@ -412,6 +444,17 @@
 				})
 			}),
 			listeners: {
+				beforeload: function(store,options) {
+					Ext.MessageBox.show({
+						msg: 'Requesting route calculation ...',
+						progressText: 'Connecting ...',
+						width: 300,
+						wait: true,
+						waitConfig: {interval:200},
+						//icon: 'ext-mb-download', //custom class in msg-box.html
+						animEl: 'wait-capabilities'
+					});
+				},
 				load: function(store, records, options){
 					Ext.each(records, function(item){
 						item.set('from', options.params.from);
@@ -443,6 +486,8 @@
 						// Reset store filter
 						store.clearFilter(true);
 					}
+					
+					Ext.MessageBox.hide();
 				}
 			}
 		});
@@ -461,6 +506,17 @@
 				})
 			}),
 			listeners: {
+				beforeload: function(store,options) {
+					Ext.MessageBox.show({
+						msg: 'Requesting driving distance calculation ...',
+						progressText: 'Connecting ...',
+						width: 300,
+						wait: true,
+						waitConfig: {interval:200},
+						//icon: 'ext-mb-download', //custom class in msg-box.html
+						animEl: 'wait-capabilities'
+					});
+				},
 				load: function(store, records, options){
 					Ext.each(records, function(item){
 						item.set('center', options.params.center);
@@ -486,6 +542,8 @@
 							item.commit();
 						});
 					}
+					
+					Ext.MessageBox.hide();
 				}
 			}
 		});
@@ -979,7 +1037,7 @@
 					xtype: 'gx_mappanel',
 					border: false,
 					layers: [ 
-						osm, cycle, gmap, gsat, ghyb, polygon, routes, points 
+						osm, cycle, gmap, gsat, ghyb, polygon, routes, points, area 
 					],
 					map: worldmap,
 					center: defaultCenter.transform(

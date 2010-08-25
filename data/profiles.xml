@@ -2,58 +2,6 @@
 <profiles xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:noNamespaceSchemaLocation="http://wrs.postlbs.org/xsd/1.1.0/profile.xsd">
 
-	<!--profile name="a7391e864abf6d56c9f9b3784a88bbc7" title="Standard, Japan">
-		<description>My test profile I use for testing</description>
-		<parameters>
-			<parameter name="srid_in" type="integer" key="srid" value="EPSG:4326" />
-			<parameter name="srid_extent" type="integer" key="srid_extent" value="EPSG:4326" />
-			<parameter name="extent" type="string" key="extent" value="139.4 35.31, 139.73 35.5" />
-		</parameters>
-		<resources>
-			<rref ref="pgrouting" enabled="true" />
-			<rref ref="geocoder" enabled="true" />
-		</resources>
-	</profile-->
-
-	<!--profile name="9d12c2a0e16c88b9a8d8e8f9f05350bc" title="Pedestrian, Japan">
-		<description>Pedestrian routing, HCC data for Japan</description>
-		<parameters>
-			<parameter name="srid_in" type="integer" key="srid" value="EPSG:4326" />
-			<parameter name="srid_extent" type="integer" key="srid_extent" value="EPSG:4326" />
-			<parameter name="table" type="string" key="table" value="shooting_pedestrian" />
-			<parameter name="extent" type="string" key="extent" value="139.4 35.31, 139.73 35.5" />
-		</parameters>
-		<resources>
-			<rref ref="pgrouting" enabled="true" />
-		</resources>
-	</profile-->
-
-	<!--profile name="21cbcaa6f63ecb84cc4c45f221dbf753" title="Toll free, Japan">
-		<description>Toll free cars routing, HCC data for Japan</description>
-		<parameters>
-			<parameter name="srid_in" type="integer" key="srid" value="EPSG:4326" />
-			<parameter name="srid_extent" type="integer" key="srid_extent" value="EPSG:4326" />
-			<parameter name="table" type="string" key="table" value="shooting_tollfree" />
-			<parameter name="extent" type="string" key="extent" value="139.4 35.31, 139.73 35.5" />
-		</parameters>
-		<resources>
-			<rref ref="pgrouting" enabled="true" />
-		</resources>
-	</profile-->
-
-	<!--profile name="9f1558169f73db843ea641cad8289df0" title="Interurban, Japan">
-		<description>Interurban cars routing, HCC data for Japan</description>
-		<parameters>
-			<parameter name="srid_in" type="integer" key="srid" value="EPSG:4326" />
-			<parameter name="srid_extent" type="integer" key="srid_extent" value="EPSG:4326" />
-			<parameter name="table" type="string" key="table" value="shooting_interurban" />
-			<parameter name="extent" type="string" key="extent" value="139.4 35.31, 139.73 35.5" />
-		</parameters>
-		<resources>
-			<rref ref="pgrouting" enabled="true" />
-		</resources>
-	</profile-->
-
 	<profile name="19070025e2ca2c0a65f29e8bcf8dc1e4" title="Pedestrians, Barcelona (m)">
 		<description>Pedestrian routing for Barcelona, Spain (OSM)</description>
 		<parameters>
@@ -67,53 +15,56 @@
 		</resources>
 	</profile>
 
-	<profile name="5a9c3394c9927fb569ff884ae76c7b35" title="Cars, Barcelona (m)">
-		<description>Car routing for Barcelona, Spain (OSM)</description>
+	<profile name="1747d4b2dd4bcd666e2df31563d22dbe" title="Pedestrians, Spain (m)">
+		<description>Pedestrian routing for Spain (OSM)</description>
 		<parameters>
 			<parameter name="srid_in" type="integer" key="srid" value="EPSG:4326" />
 			<parameter name="srid_extent" type="integer" key="srid_extent" value="EPSG:4326" />
-			<parameter name="table" type="string" key="table" value="ways" />
-			<parameter name="extent" type="string" key="extent" value="1.998653 41.27, 2.343693 41.495207" />
+			<parameter name="table" type="string" key="table" value="view_es_topo" />
+			<parameter name="extent" type="string" key="extent" value="-18.1480784 27,4.3107722 43.7856147" />
 		</parameters>
 		<resources>
-			<rref ref="pgrouting" enabled="true" />
+			<rref ref="osm2po" enabled="true" />
 		</resources>
 	</profile>
-	
-	<!--profile name="1febf6d3c0175d6e80ce90cb23fcb852" title="Pedestrians, Barcelona (h)">
-		<description>Pedestrian routing for Barcelona, Spain (OSM), Time</description>
-		<parameters>
-			<parameter name="srid_in" type="integer" key="srid" value="EPSG:4326" />
-			<parameter name="srid_extent" type="integer" key="srid_extent" value="EPSG:4326" />
-			<parameter name="table" type="string" key="table" value="osm_pedestrians" />
-			<parameter name="extent" type="string" key="extent" value="1.998653 41.27, 2.343693 41.495207" />
-			<parameter name="units" constant="true" type="string" key="units" value="hours" />
-			<parameter name="cost_value" type="string" key="cost_value" value="time" />
-			<parameter name="reverse_cost_value" type="string" key="reverse_cost_value" value="time_rc" />
-			<parameter name="cost" type="double" key="a.time"/>
-			<parameter name="rlength" type="double" key="b.time"/>
-		</parameters>
-		<resources>
-			<rref ref="osm_pgrouting" enabled="true" />
-		</resources>
-	</profile-->
 
-	<!--profile name="be5303adfbe65f80e29a80ff3814dab5" title="Cars, Barcelona (h)">
-		<description>Car routing for Barcelona, Spain (OSM), Time</description>
+	<profile name="28ef36b35ae8cb1f542578f03408b512" title="Pedestrians, Germany (m)">
+		<description>Pedestrian routing for Germany (OSM)</description>
 		<parameters>
 			<parameter name="srid_in" type="integer" key="srid" value="EPSG:4326" />
 			<parameter name="srid_extent" type="integer" key="srid_extent" value="EPSG:4326" />
-			<parameter name="table" type="string" key="table" value="osm_cars" />
-			<parameter name="extent" type="string" key="extent" value="1.998653 41.27, 2.343693 41.495207" />
-			<parameter name="units" constant="true" type="string" key="units" value="hours" />
-			<parameter name="cost_value" type="string" key="cost_value" value="time" />
-			<parameter name="reverse_cost_value" type="string" key="reverse_cost_value" value="time_rc" />
-			<parameter name="cost" type="double" key="b.time"/>
-			<parameter name="rlength" type="double" key="b.time"/>
+			<parameter name="table" type="string" key="table" value="view_de_topo" />
+			<parameter name="extent" type="string" key="extent" value="-124.402723 32,-114.138197 42.018298" />
 		</parameters>
 		<resources>
-			<rref ref="osm_pgrouting" enabled="true" />
+			<rref ref="osm2po" enabled="true" />
 		</resources>
-	</profile-->
+	</profile>
+
+	<profile name="578ed5a4eecf5a15803abdc49f6152d6" title="Pedestrians, Japan (m)">
+		<description>Pedestrian routing for Japan (OSM)</description>
+		<parameters>
+			<parameter name="srid_in" type="integer" key="srid" value="EPSG:4326" />
+			<parameter name="srid_extent" type="integer" key="srid_extent" value="EPSG:4326" />
+			<parameter name="table" type="string" key="table" value="view_ja_topo" />
+			<parameter name="extent" type="string" key="extent" value="-124.402723 32,-114.138197 42.018298" />
+		</parameters>
+		<resources>
+			<rref ref="osm2po" enabled="true" />
+		</resources>
+	</profile>
+
+	<profile name="c6698873b4f14b995c9e66ad0d8f29e3" title="Pedestrians, California (m)">
+		<description>Pedestrian routing for California, USA (OSM)</description>
+		<parameters>
+			<parameter name="srid_in" type="integer" key="srid" value="EPSG:4326" />
+			<parameter name="srid_extent" type="integer" key="srid_extent" value="EPSG:4326" />
+			<parameter name="table" type="string" key="table" value="view_us_ca_topo" />
+			<parameter name="extent" type="string" key="extent" value="-124.402723 32,-114.138197 42.018298" />
+		</parameters>
+		<resources>
+			<rref ref="osm2po" enabled="true" />
+		</resources>
+	</profile>
 
 </profiles>
