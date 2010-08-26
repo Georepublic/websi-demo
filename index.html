@@ -65,7 +65,6 @@
 		/**
 		 * Global parameters
 		 */
-		var service = false;
 		var popup = false;
 		var popupOptions = "width=800,height=600,status=yes,scrollbars=yes,resizable=yes";
 		
@@ -93,28 +92,15 @@
 					});
 				},
 				load: function(store, records, options){
-					
-					var rdata = records[0].data;
-					
-					var info = Ext.getCmp('button-profile-info');
-					(records.length > 0) ? info.enable() : info.disable();
-					
-					Ext.getCmp('button-services').items.each(function(btn){
-						btn.disable().toggle(false);
-					});
-					
-					if(rdata.services['locate']){
-						Ext.getCmp('button-geocode').enable();
-					}
-					
-					if(rdata.services['catch']){
-						Ext.getCmp('button-catch').enable();
-					}
 
-					if(rdata.services['route']){
-						Ext.getCmp('button-route').enable();
-					}
-					
+					var rdata = records[0].data;
+
+					var info = Ext.getCmp('button-profile-info');
+					var setp = Ext.getCmp('button-icon-start-add');
+
+					(records.length > 0) ? info.enable() : info.disable();
+					(records.length > 0) ? setp.enable() : setp.disable();
+
 					// Pan to default extent
 					var e = rdata.parameters.extent.value.split(',');
 					
@@ -123,32 +109,21 @@
 					extent.push(parseFloat(e[0].split(' ')[1]));
 					extent.push(parseFloat(e[1].split(' ')[1]));
 					extent.push(parseFloat(e[1].split(' ')[2]));
-					
+
 					var bounds = OpenLayers.Bounds.fromArray(extent);
 					bounds.transform(
 						new OpenLayers.Projection(rdata.parameters.srid_in.value), 
 						worldmap.getProjectionObject()
 					);
-					
+
 					if(!bounds.containsBounds(worldmap.getExtent())){
 						worldmap.zoomToExtent(bounds);
-						
+
 						// Empty stores
 						pointStore.removeAll();
 						routeStore.removeAll();
-						catchStore.removeAll();
 					}
-					
-					if(rdata.parameters.units){
-						Ext.getCmp('menu-catch-limits').setValue(1.00);
-						Ext.getCmp('menu-catch-units').setText(' [' 
-									+ rdata.parameters.units.value + ']');
-					}
-					else{
-						Ext.getCmp('menu-catch-limits').setValue(5000);
-						Ext.getCmp('menu-catch-units').setText(' [m]');
-					}
-					
+
 					// Draw service extent
 					area.destroyFeatures();
 					var feature = new OpenLayers.Feature.Vector(bounds.toGeometry());
@@ -415,19 +390,6 @@
 			})
 		});
 
-		var polygon = new OpenLayers.Layer.Vector(" Catch Layer",{
-			styleMap: new OpenLayers.StyleMap({
-				'default': OpenLayers.Util.applyDefaults({
-					strokeWidth: 4,
-					strokeColor: '#4620ce',
-					fillColor: '#4620ce'
-					}, OpenLayers.Feature.Vector.style["default"]), 
-				'select': {
-					strokeWidth: 5
-				}
-			})
-		});
-
 		var routeStore = new GeoExt.data.FeatureStore({
 			layer: routes,
 			root: 'features',
@@ -492,62 +454,6 @@
 			}
 		});
 
-		var catchStore = new GeoExt.data.FeatureStore({
-			layer: polygon,
-			root: 'features',
-			fields: [
-				{ name: 'from', mapping: 'state' },
-				{ name: 'service', mapping: 'service' }
-			],
-			proxy: new GeoExt.data.ProtocolProxy({
-				protocol: new OpenLayers.Protocol.HTTP({
-					url: OpenLayers.ProxyHost,
-					format: new OpenLayers.Format.GeoJSON()
-				})
-			}),
-			listeners: {
-				beforeload: function(store,options) {
-					Ext.MessageBox.show({
-						msg: 'Requesting driving distance calculation ...',
-						progressText: 'Connecting ...',
-						width: 300,
-						wait: true,
-						waitConfig: {interval:200},
-						//icon: 'ext-mb-download', //custom class in msg-box.html
-						animEl: 'wait-capabilities'
-					});
-				},
-				load: function(store, records, options){
-					Ext.each(records, function(item){
-						item.set('center', options.params.center);
-						item.set('service', options.params.service);
-						item.commit();
-					});
-
-					if(pointStore){
-						var points = pointStore.query('id', options.params.center);
-						points.each(function(item){ 
-							if(records.length > 0){
-								item.set('message', 'Area found [Distance: ' 
-											+ Ext.getCmp('menu-catch-limits').getValue() + ']'); 
-								item.set('total', '---'); 
-							}
-							else {
-								item.set('message', 'No service result'); 
-							}
-							
-							// Save AJAX response in store
-							item.set('response', store.proxy.response.priv.responseText);
-							item.set('request', store.proxy.protocol.options.url);
-							item.commit();
-						});
-					}
-					
-					Ext.MessageBox.hide();
-				}
-			}
-		});
-
 		var pointStore = new GeoExt.data.FeatureStore({
 			layer: points,
 			root: '',
@@ -559,71 +465,40 @@
 				add: function(store,records,idx){
 
 					records[0].data['message'] = 'Searching ...';
-					records[0].data['service'] = service;
+					records[0].data['service'] = 'route';
 					records[0].data['total'] = 0;
 					records[0].data['id'] = records[0].data.feature.id;
 
-					switch(service){
-						case 'route':
-							var url = OpenLayers.ProxyHost + '/' 
-										+ capabilities.data.items[0].data.name
-										+ '/route.geojson';
+					var url = OpenLayers.ProxyHost + '/' 
+								+ capabilities.data.items[0].data.name
+								+ '/route.geojson';
 
-							if(idx > 0){	
-								var start = store.getAt(idx-1);	
-								p1 = start.data.feature.geometry;
-								p2 = records[0].data.feature.geometry;
+					if(idx > 0){	
+						var start = store.getAt(idx-1);	
+						p1 = start.data.feature.geometry;
+						p2 = records[0].data.feature.geometry;
 
-								var json = { 
-									points: [
-										p1.x + ' ' + p1.y, 
-										p2.x + ' ' + p2.y
-									], 
-									crs: worldmap.projection
-								};
+						var json = { 
+							points: [
+								p1.x + ' ' + p1.y, 
+								p2.x + ' ' + p2.y
+							], 
+							crs: worldmap.projection
+						};
 
-								routeStore.proxy.protocol.options.url = 
-											url + '&json=' + Ext.encode(json);
-								routeStore.load({ 
-									add: true,
-									params: {
-										from: start.data.id,
-										to: records[0].data.id,
-										service: 'route'
-									}
-								});	
+						routeStore.proxy.protocol.options.url = 
+									url + '&json=' + Ext.encode(json);
+						routeStore.load({ 
+							add: true,
+							params: {
+								from: start.data.id,
+								to: records[0].data.id,
+								service: 'route'
 							}
-							else{
-								records[0].data['message'] = 'Starting point';
-							}
-							break;
-
-						case 'catch':
-							var url = OpenLayers.ProxyHost + '/' 
-										+ capabilities.data.items[0].data.name
-										+ '/catch.geojson';
-
-							p1 = records[0].data.feature.geometry;
-
-							var json = { 
-								points: [ p1.x + ' ' + p1.y ], 
-								distance: Ext.getCmp('menu-catch-limits').getValue(),
-								crs: worldmap.projection
-							};
-
-							catchStore.proxy.protocol.options.url = 
-										url + '&json=' + Ext.encode(json);
-							catchStore.load({ 
-								add: true,
-								params: {
-									center: records[0].data.id,
-									service: 'catch'
-								}
-							});
-							break;
-							
-						case 'geocode':
-							break;
+						});	
+					}
+					else{
+						records[0].data['message'] = 'Starting point';
 					}
 				},
 				remove: function(store,record,idx){
@@ -635,8 +510,7 @@
 					to.each(function(item){ 
 						routeStore.remove(item); 
 					});
-					var center = catchStore.query('center',record.data.id);
-					center.each(function(item){ catchStore.remove(item); });
+
 					// is there a new end point?
 					if(store.getAt(idx)){
 						var url = OpenLayers.ProxyHost + '/' 
@@ -709,10 +583,6 @@
 						to.each(function(item){ 
 							//highlight features 
 						});
-						var center = catchStore.query('center',rec.data.id);
-						center.each(function(item){ 
-							//highlight features  
-						});
 					},
 					rowdeselect: function(sm,idx,rec){
 						var from = routeStore.query('from',rec.data.id);
@@ -722,10 +592,6 @@
 						var to = routeStore.query('to',rec.data.id);
 						to.each(function(item){ 
 							//turn off highlight features 
-						});
-						var center = catchStore.query('center',rec.data.id);
-						center.each(function(item){ 
-							//turn off highlight features  
 						});
 					}
 				}
@@ -761,14 +627,6 @@
 			}
 		});
 
-		var catchGrid = new Ext.grid.GridPanel({
-			store: catchStore,
-			cm: new Ext.grid.ColumnModel([
-				{ header: 'Message', dataIndex: 'message' }
-			]),
-			sm: new GeoExt.grid.FeatureSelectionModel()
-		});
-
 		/**
 		 * Profile Store
 		 */
@@ -785,233 +643,6 @@
 			])
 		});
 
-		var profileMenu = {  
-			xtype: 'buttongroup',
-			title: 'Profile',
-			columns: 2,
-			defaults: {
-				scale: 'large',
-				iconAlign: 'left'
-			},
-			items: [{
-				xtype: 'combo',
-				mode: 'local',
-				store: profileStore,
-				width: 170,
-				emptyText: 'Select Profile ...',
-				displayField: 'title',
-				hiddenName: 'name', 
-				valueField: 'name',
-				editable: false,
-				forceSelection: true,
-				triggerAction: 'all',
-				selectOnFocus: true,
-				id: 'combo-select-profile',
-				listeners: {
-					select: function(combo, record, idx){
-						// Get profile capabilties
-						var url = OpenLayers.ProxyHost + '/' 
-									+ record.data.name + '/capabilities.json'
-						capabilities.proxy.setUrl(url, true);
-						capabilities.load();
-					}
-				}
-			},{
-				xtype: 'tbbutton',
-				iconCls: 'button-icon-profile-info',
-				id: 'button-profile-info',
-				disabled: true,
-				handler: function(evt){
-					if(capabilities){
-						var url = capabilities.proxy.url.split('url=');
-						Ext.getCmp('capabilities-url').setValue(url[1]);
-						var json = prettyJson(capabilities.reader.jsonData);
-						Ext.getCmp('capabilities-json').setValue(json);
-						profilePopup.show();
-					}
-				}
-			}]
-		};
-
-		var serviceMenu = {
-			xtype: 'buttongroup',
-			id: 'button-services',
-			title: 'Services',
-			columns: 3,
-			defaults: {
-				scale: 'large',
-				iconAlign: 'left',
-				disabled: true, 
-				toggleGroup: 'toggle-services',
-				allowDepress: false,
-				listeners: {
-					toggle: function(btn,state){
-						if(state){
-							Ext.getCmp(btn.menuRef).show();
-							service = btn.service;
-						}
-						else{
-							Ext.getCmp(btn.menuRef).items.each(function(i){
-								if(i.type == 'button'){
-									i.toggle(false);
-								}
-							});
-							Ext.getCmp(btn.menuRef).hide();
-						}
-					}
-				}
-			},
-			items: [{
-				text: 'Route',
-				id: 'button-route',
-				menuRef: 'menu-route',
-				service: 'route',
-				iconCls: 'button-icon-shortest-path'
-			},{
-				text: 'Catch',
-				id: 'button-catch',
-				menuRef: 'menu-catch',
-				service: 'catch',
-				iconCls: 'button-icon-driving-distance'
-			},{
-				text: 'Locate',
-				id: 'button-geocode',
-				menuRef: 'menu-geocode',
-				service: 'geocode',
-				iconCls: 'button-icon-geocode'
-			}]
-		};
-
-		var defaultMenu = {
-			xtype: 'buttongroup',
-			id: 'menu-default',
-			frame: false,
-			defaults: {
-				scale: 'small',
-				iconAlign: 'left'
-			},
-			items: [{
-				text: 'Reset all',
-				iconCls: 'button-icon-default-reset',
-				handler: function(evt){
-					pointStore.removeAll();
-					routeStore.removeAll();
-					catchStore.removeAll();
-				}
-			}]
-		};
-
-		var routeMenu = {
-			xtype: 'buttongroup',
-			id: 'menu-route',
-			hidden: true,
-			frame: false,
-			defaults: {
-				scale: 'small',
-				iconAlign: 'left'
-			},
-			items: [{ xtype: 'tbseparator' }, 
-				new GeoExt.Action({
-					text: "Set Point",
-					iconCls: 'button-icon-start-add',
-					map: worldmap,
-					toggleGroup: "menu-route",
-					group: "menu-route",
-					control: new OpenLayers.Control.DrawFeature(
-						points, OpenLayers.Handler.Point
-					)
-				}),
-				{ xtype: 'tbseparator' }
-			]
-		};
-
-		var catchMenu = {
-			xtype: 'buttongroup',
-			id: 'menu-catch',
-			hidden: true,
-			frame: false,
-			defaults: {
-				scale: 'small',
-				iconAlign: 'left'
-			},
-			items: [{ xtype: 'tbseparator' }, 
-				new GeoExt.Action({
-					text: "Set Point",
-					iconCls: 'button-icon-start-add',
-					map: worldmap,
-					toggleGroup: "menu-catch",
-					group: "menu-catch",
-					control: new OpenLayers.Control.DrawFeature(
-						points, OpenLayers.Handler.Point
-					)
-				}),
-				{ xtype: 'tbseparator' },{
-					xtype: 'tbtext',
-					text: 'Within: '
-				},{
-					xtype: 'textfield',
-					id: 'menu-catch-limits',
-					emptyText: 'Type limit...',
-					regex: /[^%_*?!&;:,]/,
-					enableKeyEvents: true,
-					allowBlank: false,
-					width: 80,
-					style: {
-						'text-align': 'right'
-					}
-				},{
-					xtype: 'tbtext',
-					id: 'menu-catch-units',
-					width: 80,
-					text: ' [dd] '
-				}
-			]
-		};
-		
-		var geocodeMenu = {
-			xtype: 'buttongroup',
-			id: 'menu-geocode',
-			hidden: true,
-			frame: false,
-			defaults: {
-				scale: 'small',
-				iconAlign: 'left'
-			},
-			items: [{
-				text: 'Set Point',
-				id: 'menu-geocode-set',
-				iconCls: 'button-icon-start-add',
-				enableToggle: true,
-				handler: function(evt){
-					pointStore.removeAt(pointStore.getCount()-1);
-				}
-			},{
-				xtype: 'tbseparator'
-			},{
-				xtype: 'tbtext',
-				text: 'Address: '
-			},{
-				xtype: 'textfield',
-				id: 'menu-geocode-search',
-				emptyText: 'Type address...',
-				regex: /[^%_*?!&;:,]/,
-				enableKeyEvents: true,
-				listeners: {
-					keypress: function(form, evt){ 
-						if(evt.getKey() == Ext.EventObject.ENTER){
-							//console.info('geocode');
-						}
-					}
-				}
-			},{
-				id: 'button-geocoder',
-				iconCls: 'button-icon-geocode-locate',
-				handler: function(){
-					//console.info('geocode');
-				}
-			}]
-		};
-		
 		/**
 		 * Viewport Layout 
 		 */
@@ -1037,7 +668,7 @@
 					xtype: 'gx_mappanel',
 					border: false,
 					layers: [ 
-						osm, cycle, gmap, gsat, ghyb, polygon, routes, points, area 
+						osm, cycle, gmap, gsat, ghyb, routes, points, area 
 					],
 					map: worldmap,
 					center: defaultCenter.transform(
@@ -1046,7 +677,63 @@
 					),
 					zoom: 7,
 					tbar: new Ext.Toolbar({
-						items: [ routeMenu, catchMenu, geocodeMenu, '->', defaultMenu ]
+						items: [{
+							xtype: 'combo',
+							mode: 'local',
+							store: profileStore,
+							width: 200,
+							emptyText: 'Select Profile ...',
+							displayField: 'title',
+							hiddenName: 'name', 
+							valueField: 'name',
+							editable: false,
+							forceSelection: true,
+							triggerAction: 'all',
+							selectOnFocus: true,
+							id: 'combo-select-profile',
+							listeners: {
+								select: function(combo, record, idx){
+									// Get profile capabilties
+									var url = OpenLayers.ProxyHost + '/' 
+												+ record.data.name + '/capabilities.json'
+									capabilities.proxy.setUrl(url, true);
+									capabilities.load();
+								}
+							}
+						},{
+							xtype: 'tbbutton',
+							iconCls: 'button-icon-profile-info',
+							id: 'button-profile-info',
+							disabled: true,
+							handler: function(evt){
+								if(capabilities){
+									var url = capabilities.proxy.url.split('url=');
+									Ext.getCmp('capabilities-url').setValue(url[1]);
+									var json = prettyJson(capabilities.reader.jsonData);
+									Ext.getCmp('capabilities-json').setValue(json);
+									profilePopup.show();
+								}
+							}
+						}, '-', 
+						new GeoExt.Action({
+							text: "Set Point",
+							iconCls: 'button-icon-start-add',
+							id: 'button-icon-start-add',
+							map: worldmap,
+							toggleGroup: "menu-route",
+							group: "menu-route",
+							disabled: true,
+							control: new OpenLayers.Control.DrawFeature(
+								points, OpenLayers.Handler.Point
+							)
+						}), '->', {
+							text: 'Reset all',
+							iconCls: 'button-icon-default-reset',
+							handler: function(evt){
+								pointStore.removeAll();
+								routeStore.removeAll();
+							}
+						}]
 					}),
 					bbar: new Ext.Toolbar({
 						items: [
@@ -1057,7 +744,7 @@
 				},{
 					region: 'west',
 					xtype: 'panel',
-					title: 'Control Panel',
+					title: 'Route Panel',
 					border: true,
 					split: true,
 					collapsible: true,
@@ -1067,7 +754,6 @@
 					width: 447,
 					minSize: 447,
 					items: [ pointGrid ],
-					tbar: [ profileMenu, serviceMenu ],
 					bbar: new Ext.Toolbar({
 						items: [
 							{ xtype: 'tbtext', text: '<a href="http://georepublic.de" target="_blank">Georepublic UG</a> & <a href="http://georepublic.co.jp" target="_blank">Georepublic Japan</a> &copy;2010' }
