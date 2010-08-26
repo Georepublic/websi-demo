@@ -28,7 +28,7 @@
 		</resources>
 	</profile>
 
-	<profile name="28ef36b35ae8cb1f542578f03408b512" title="Pedestrians, Germany (m)">
+	<!--profile name="28ef36b35ae8cb1f542578f03408b512" title="Pedestrians, Germany (m)">
 		<description>Pedestrian routing for Germany (OSM)</description>
 		<parameters>
 			<parameter name="srid_in" type="integer" key="srid" value="EPSG:4326" />
@@ -39,9 +39,9 @@
 		<resources>
 			<rref ref="osm2po" enabled="true" />
 		</resources>
-	</profile>
+	</profile-->
 
-	<profile name="578ed5a4eecf5a15803abdc49f6152d6" title="Pedestrians, Japan (m)">
+	<!--profile name="578ed5a4eecf5a15803abdc49f6152d6" title="Pedestrians, Japan (m)">
 		<description>Pedestrian routing for Japan (OSM)</description>
 		<parameters>
 			<parameter name="srid_in" type="integer" key="srid" value="EPSG:4326" />
@@ -52,7 +52,7 @@
 		<resources>
 			<rref ref="osm2po" enabled="true" />
 		</resources>
-	</profile>
+	</profile-->
 
 	<profile name="c6698873b4f14b995c9e66ad0d8f29e3" title="Pedestrians, California (m)">
 		<description>Pedestrian routing for California, USA (OSM)</description>
