@@ -67,6 +67,19 @@
 		</resources>
 	</profile>
 
+	<profile name="578ed5a4eecf5a15803abdc49f6152d6" title="Pedestrians, Japan (m)">
+		<description>Pedestrian routing for Japan (OSM)</description>
+		<parameters>
+			<parameter name="srid_in" type="integer" key="srid" value="EPSG:4326" />
+			<parameter name="srid_extent" type="integer" key="srid_extent" value="EPSG:4326" />
+			<parameter name="table" type="string" key="table" value="view_edges_ja" />
+			<parameter name="extent" type="string" key="extent" value="129.194092 30.054586,145.82 45.5223" />
+		</parameters>
+		<resources>
+			<rref ref="pgrouting_ja" enabled="true" />
+		</resources>
+	</profile>
+
 	<profile name="c6698873b4f14b995c9e66ad0d8f29e3" title="Pedestrians, California (m)">
 		<description>Pedestrian routing for California, USA (OSM)</description>
 		<parameters>
