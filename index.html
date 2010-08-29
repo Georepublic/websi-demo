@@ -82,6 +82,7 @@
 			listeners: {
 				beforeload: function(store,options) {
 					Ext.MessageBox.show({
+						title: 'Profile request',
 						msg: 'Requesting capabilities document ...',
 						progressText: 'Connecting ...',
 						width: 300,
@@ -112,9 +113,6 @@
 					extent.push(parseFloat(p2.split(' ')[0]));
 					extent.push(parseFloat(p2.split(' ')[1]));
 					
-					console.info(e);
-					console.info(extent);
-
 					var bounds = OpenLayers.Bounds.fromArray(extent);
 					bounds.transform(
 						new OpenLayers.Projection(rdata.parameters.srid_in.value), 
@@ -134,6 +132,7 @@
 					var feature = new OpenLayers.Feature.Vector(bounds.toGeometry());
 					area.addFeatures([feature]);
 
+					Ext.getCmp('button-icon-start-add').toggle(false);
 					Ext.MessageBox.hide();
 				}
 			}
@@ -413,7 +412,8 @@
 			listeners: {
 				beforeload: function(store,options) {
 					Ext.MessageBox.show({
-						msg: 'Requesting route calculation ...',
+						title: 'Route request',
+						msg: 'Waiting for route ...',
 						progressText: 'Connecting ...',
 						width: 300,
 						wait: true,
@@ -561,17 +561,17 @@
 			border: false,
 			autoSizeColumns: true,
 			loadMask: true,
-			autoScroll: true,
-			autoWidth: true,
+			stripeRows: true,
 			autoHeight: true,
+			autoWidth: true,
 			viewConfig: { forceFit: true },
 			store: pointStore,
 			height: 100,
 			cm: new Ext.grid.ColumnModel([
 				new Ext.grid.RowNumberer(),
-				{ header: 'Message', dataIndex: 'message' },
+				{ header: 'Response message', dataIndex: 'message' },
 				{ header: 'Total', dataIndex: 'total', width: 40, align: 'right' },
-				{ width: 40, menuDisabled: true, hideable: false, 
+				{ width: 30, menuDisabled: true, hideable: false, 
 					renderer: function(quote) {
 						return '<a href="#">Remove</a>';
 					}
@@ -686,7 +686,7 @@
 							xtype: 'combo',
 							mode: 'local',
 							store: profileStore,
-							width: 200,
+							width: 250,
 							emptyText: 'Select Profile ...',
 							displayField: 'title',
 							hiddenName: 'name', 
@@ -721,7 +721,7 @@
 							}
 						}, '-', 
 						new GeoExt.Action({
-							text: "Set Point",
+							text: "Add Point",
 							iconCls: 'button-icon-start-add',
 							id: 'button-icon-start-add',
 							map: worldmap,
@@ -732,7 +732,7 @@
 								points, OpenLayers.Handler.Point
 							)
 						}), '->', {
-							text: 'Reset all',
+							text: 'Reset Routes',
 							iconCls: 'button-icon-default-reset',
 							handler: function(evt){
 								pointStore.removeAll();
@@ -752,12 +752,13 @@
 					title: 'Route Panel',
 					border: true,
 					split: true,
+					autoScroll: true,
 					collapsible: true,
 					collapseMode: 'mini',
 					hideCollapseTool: true,
 					resizeTabs: true,
-					width: 447,
-					minSize: 447,
+					width: 350,
+					minSize: 250,
 					items: [ pointGrid ],
 					bbar: new Ext.Toolbar({
 						items: [
