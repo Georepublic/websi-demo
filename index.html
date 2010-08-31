@@ -645,7 +645,14 @@
 				{ name: 'name', mapping: '@name' },
 				{ name: 'title', mapping: '@title' },
 				{ name: 'description', mapping: 'description' }
-			])
+			]),
+			listeners: {
+				load: function(store, rec, idx) {
+					var combo = Ext.getCmp('combo-select-profile');
+					combo.setValue('19070025e2ca2c0a65f29e8bcf8dc1e4');
+					combo.fireEvent('select', combo, store.getAt(0), 0);
+				}
+			}
 		});
 
 		/**
