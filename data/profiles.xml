@@ -80,6 +80,19 @@
 		</resources>
 	</profile>
 
+	<profile name="cdd54e34142e439a0faebed43951c4c7" title="OSM - Philippines">
+		<description>Pedestrian routing for Philippines (OSM)</description>
+		<parameters>
+			<parameter name="srid_in" type="integer" key="srid" value="EPSG:4326" />
+			<parameter name="srid_extent" type="integer" key="srid_extent" value="EPSG:4326" />
+			<parameter name="table" type="string" key="table" value="view_ph_topo" />
+			<parameter name="extent" type="string" key="extent" value="117.1973012 5.0304496,126.3423315 19.0009684" />
+		</parameters>
+		<resources>
+			<rref ref="osm2po_ph" enabled="true" />
+		</resources>
+	</profile>
+
 	<profile name="c6698873b4f14b995c9e66ad0d8f29e3" title="OSM - California (United States)">
 		<description>Pedestrian routing for California, USA (OSM)</description>
 		<parameters>
